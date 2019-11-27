@@ -11,8 +11,8 @@ data class Meeting(
         @Id
         val id: String? = null,
         val title: String,
-        val status: MeetingStatus,
-        val time: MeetingTime? = null,
+        var status: MeetingStatus,
+        var time: MeetingTime? = null,
         val votes: List<MeetingPoll> = emptyList(),
-        val roomId: Int? = null
+        var roomId: Int? = null
 )
