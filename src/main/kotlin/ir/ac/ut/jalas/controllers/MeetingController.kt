@@ -8,6 +8,7 @@ import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.services.MeetingService
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.web.bind.annotation.*
+import java.util.*
 import javax.validation.Valid
 
 
@@ -43,6 +44,8 @@ class MeetingController(val meetingService: MeetingService) {
     ) {
         if (request.selectedTime.notValid())
             throw BadRequestError(ErrorType.INVALID_DATE_RANGE)
+        if (request.pageEntryTime.time < Date().time)
+            throw BadRequestError(ErrorType.INVALID_TIME)
         meetingService.reserveMeeting(meetingId, request)
     }
 
