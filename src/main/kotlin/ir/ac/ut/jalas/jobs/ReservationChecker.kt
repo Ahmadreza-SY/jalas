@@ -15,7 +15,7 @@ class ReservationChecker(
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
-    @Scheduled(fixedDelay = 30*1000L)
+    @Scheduled(fixedDelay = 30 * 1000L)
     fun checkPendingReservations() {
         val pendingMeetings = meetingRepository.findByStatus(MeetingStatus.PENDING)
         pendingMeetings.map {
@@ -25,10 +25,8 @@ class ReservationChecker(
                     selectedTime = it.time!!
             )
         }.onEach { (meeting, message) ->
-            when (meeting.status) {
-                MeetingStatus.RESERVED -> TODO("send email")
-                else -> logger.error("meeting ${meeting.id} reservation failed with error: $message")
-            }
+            if (meeting.status != MeetingStatus.RESERVED)
+                logger.error("meeting ${meeting.id} reservation failed with error: $message")
         }
     }
 }
