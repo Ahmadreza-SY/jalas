@@ -6,4 +6,6 @@ data class MeetingTime(val start: Date, val end: Date) {
 
     constructor(start: Long, end: Long) : this(Date(start), Date(end))
 
+    fun notValid() = start > end
+
 }

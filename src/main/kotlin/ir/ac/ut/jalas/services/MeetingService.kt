@@ -4,7 +4,7 @@ import feign.FeignException
 import ir.ac.ut.jalas.clients.ReservationClient
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.clients.models.ReservationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
+import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
@@ -39,10 +39,16 @@ class MeetingService(
         }
     }
 
-    fun createMeeting(request: MeetingCreationRequest): String? {
-        val meeting = meetingRepository.findByIdOrNull(request.meetingId)
+    fun getMeeting(meetingId: String): MeetingResponse {
+        val entity = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        val message = createMeeting(meeting, request.selectedRoom, request.selectedTime)
+        return MeetingResponse(entity)
+    }
+
+    fun reserveMeeting(meetingId: String, request: MeetingReservationRequest): String? {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+        val message = reserveMeeting(meeting, request.selectedRoom, request.selectedTime)
         return when (meeting.status) {
             MeetingStatus.RESERVED -> message
             MeetingStatus.PENDING -> throw InternalServerError(message)
@@ -51,7 +57,7 @@ class MeetingService(
         }
     }
 
-    fun createMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: MeetingTime): String? {
+    fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: MeetingTime): String? {
         val message = try {
             val response = reservationClient.reserveRoom(
                     roomId = selectedRoom,
@@ -85,11 +91,5 @@ class MeetingService(
         meetingRepository.save(meeting)
 
         return message
-    }
-
-    fun getMeeting(meetingId: String): MeetingResponse {
-        val entity = meetingRepository.findByIdOrNull(meetingId)
-                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        return MeetingResponse(entity)
     }
 }

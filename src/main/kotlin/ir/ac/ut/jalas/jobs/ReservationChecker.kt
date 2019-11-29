@@ -19,7 +19,7 @@ class ReservationChecker(
     fun checkPendingReservations() {
         val pendingMeetings = meetingRepository.findByStatus(MeetingStatus.PENDING)
         pendingMeetings.map {
-            it to meetingService.createMeeting(
+            it to meetingService.reserveMeeting(
                     meeting = it,
                     selectedRoom = it.roomId!!,
                     selectedTime = it.time!!
