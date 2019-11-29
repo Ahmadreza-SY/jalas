@@ -33,7 +33,7 @@ class MeetingService(
 
     fun getMeetings() = meetingRepository.findAll().map { MeetingResponse(it) }
 
-    fun createRequest(request: MeetingCreationRequest): MeetingResponse {
+    fun createMeeting(request: MeetingCreationRequest): MeetingResponse {
         val owner = authService.getLoggedInUser()
         val entity = request.extract(owner.email)
         meetingRepository.save(entity)

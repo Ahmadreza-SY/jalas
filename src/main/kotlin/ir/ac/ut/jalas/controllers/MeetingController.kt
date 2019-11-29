@@ -21,7 +21,7 @@ class MeetingController(val meetingService: MeetingService) {
 
     @PostMapping
     fun createMeeting(@Valid @RequestBody request: MeetingCreationRequest) =
-            meetingService.createRequest(request)
+            meetingService.createMeeting(request)
 
     @GetMapping("/{meetingId}")
     fun getMeeting(@PathVariable meetingId: String) = meetingService.getMeeting(meetingId)
