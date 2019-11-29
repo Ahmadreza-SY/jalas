@@ -7,7 +7,7 @@ fun FeignException.extractErrorMessage(): String? {
     return when {
         status() == 0 -> ErrorType.TIMEOUT.toString()
         status() == HttpStatus.BAD_REQUEST.value() -> ErrorType.ROOM_ALREADY_RESERVED.toString()
-        status() == HttpStatus.INTERNAL_SERVER_ERROR.value() -> ErrorType.INTERNAL_SERVER_ERROR.toString()
+        status() in 500..599 -> ErrorType.INTERNAL_SERVER_ERROR.toString()
         else -> message
     }
 }
