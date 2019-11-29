@@ -44,7 +44,7 @@ class MeetingController(val meetingService: MeetingService) {
     ) {
         if (request.selectedTime.notValid())
             throw BadRequestError(ErrorType.INVALID_DATE_RANGE)
-        if (request.pageEntryTime.time < Date().time)
+        if (request.pageEntryTime.time > Date().time)
             throw BadRequestError(ErrorType.INVALID_TIME)
         meetingService.reserveMeeting(meetingId, request)
     }
