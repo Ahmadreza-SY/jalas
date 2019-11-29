@@ -116,8 +116,7 @@ class MeetingService(
                 message = """
                             |Dear ${user.firstName},
                             |
-                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has 
-                            been successfully reserved at room ${meeting.roomId}.
+                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
                             |
                             |Best Regards,
                             |Jalas Team
