@@ -1,24 +1,14 @@
 package ir.ac.ut.jalas.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import feign.FeignException
+import org.springframework.http.HttpStatus
 
 fun FeignException.extractErrorMessage(): String? {
-    var errorBody = message
-
-    val pattern = "([^{]*)([^}]*)}"
-    errorBody = errorBody?.replace("\n".toRegex(), "")
-    errorBody = errorBody?.replace(pattern.toRegex(), "$2") + "}"
-
-    return try {
-        val mapper = ObjectMapper()
-        val map = mapper.readValue(errorBody, object : TypeReference<Map<String, String>>() {
-
-        })
-        map["message"]
-    } catch (e: Exception) {
-        message
+    return when {
+        status() == 0 -> ErrorType.TIMEOUT.toString()
+        status() == HttpStatus.BAD_REQUEST.value() -> ErrorType.ROOM_ALREADY_RESERVED.toString()
+        status() == HttpStatus.INTERNAL_SERVER_ERROR.value() -> ErrorType.INTERNAL_SERVER_ERROR.toString()
+        else -> message
     }
 }
 
