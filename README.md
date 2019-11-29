@@ -1,6 +1,5 @@
+## Jalas Project    
 
-## Jalas Project  
-  
 Jalas is an online reservation system,  and it is the main project of Software Engineering Course.  
   
 ### Accessing Documentation  
