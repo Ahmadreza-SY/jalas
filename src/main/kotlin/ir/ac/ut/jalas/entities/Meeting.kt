@@ -9,10 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "meeting")
 data class Meeting(
         @Id
-        val id: String? = null,
+        var id: String? = null,
         val title: String,
         var status: MeetingStatus,
         var time: MeetingTime? = null,
         val votes: List<MeetingPoll> = emptyList(),
-        var roomId: Int? = null
+        var roomId: Int? = null,
+        val owner: String
 )

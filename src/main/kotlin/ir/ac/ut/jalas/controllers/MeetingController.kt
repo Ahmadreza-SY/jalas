@@ -1,6 +1,7 @@
 package ir.ac.ut.jalas.controllers
 
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
+import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
 import ir.ac.ut.jalas.entities.nested.MeetingTime
 import ir.ac.ut.jalas.exceptions.BadRequestError
@@ -16,6 +17,10 @@ class MeetingController(val meetingService: MeetingService) {
 
     @GetMapping
     fun getMeetings() = meetingService.getMeetings()
+
+    @PostMapping
+    fun createMeeting(@Valid @RequestBody request: MeetingCreationRequest) =
+            meetingService.createRequest(request)
 
     @GetMapping("/{meetingId}")
     fun getMeeting(@PathVariable meetingId: String) = meetingService.getMeeting(meetingId)

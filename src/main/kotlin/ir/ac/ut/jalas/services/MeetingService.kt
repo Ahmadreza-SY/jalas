@@ -4,6 +4,7 @@ import feign.FeignException
 import ir.ac.ut.jalas.clients.ReservationClient
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.clients.models.ReservationRequest
+import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
 import ir.ac.ut.jalas.entities.Meeting
@@ -23,10 +24,24 @@ import org.springframework.stereotype.Service
 @Service
 class MeetingService(
         val meetingRepository: MeetingRepository,
-        val reservationClient: ReservationClient
+        val reservationClient: ReservationClient,
+        val authService: AuthService
 ) {
 
     fun getMeetings() = meetingRepository.findAll().map { MeetingResponse(it) }
+
+    fun createRequest(request: MeetingCreationRequest): MeetingResponse {
+        val owner = authService.getLoggedInUser()
+        val entity = request.extract(owner.email)
+        meetingRepository.save(entity)
+        return MeetingResponse(entity)
+    }
+
+    fun getMeeting(meetingId: String): MeetingResponse {
+        val entity = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+        return MeetingResponse(entity)
+    }
 
     fun getAvailableRooms(time: MeetingTime): AvailableRoomsResponse {
         try {
@@ -37,12 +52,6 @@ class MeetingService(
         } catch (e: FeignException) {
             throw InternalServerError(e.extractErrorMessage())
         }
-    }
-
-    fun getMeeting(meetingId: String): MeetingResponse {
-        val entity = meetingRepository.findByIdOrNull(meetingId)
-                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        return MeetingResponse(entity)
     }
 
     fun reserveMeeting(meetingId: String, request: MeetingReservationRequest): String? {
@@ -62,7 +71,7 @@ class MeetingService(
             val response = reservationClient.reserveRoom(
                     roomId = selectedRoom,
                     request = ReservationRequest(
-                            username = "ahmadreza",
+                            username = authService.getLoggedInUser().email,
                             start = selectedTime.start.toReserveFormat(),
                             end = selectedTime.end.toReserveFormat()
                     )
