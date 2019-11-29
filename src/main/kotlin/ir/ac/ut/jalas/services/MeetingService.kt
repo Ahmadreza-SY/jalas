@@ -8,6 +8,7 @@ import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
 import ir.ac.ut.jalas.entities.Meeting
+import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.MeetingTime
 import ir.ac.ut.jalas.exceptions.BadRequestError
@@ -25,7 +26,8 @@ import org.springframework.stereotype.Service
 class MeetingService(
         val meetingRepository: MeetingRepository,
         val reservationClient: ReservationClient,
-        val authService: AuthService
+        val authService: AuthService,
+        val mailService: MailService
 ) {
 
     fun getMeetings() = meetingRepository.findAll().map { MeetingResponse(it) }
@@ -68,10 +70,11 @@ class MeetingService(
 
     fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: MeetingTime): String? {
         val message = try {
+            val user = authService.getLoggedInUser()
             val response = reservationClient.reserveRoom(
                     roomId = selectedRoom,
                     request = ReservationRequest(
-                            username = authService.getLoggedInUser().email,
+                            username = user.email,
                             start = selectedTime.start.toReserveFormat(),
                             end = selectedTime.end.toReserveFormat()
                     )
@@ -80,6 +83,8 @@ class MeetingService(
             meeting.status = MeetingStatus.RESERVED
             meeting.time = selectedTime
             meeting.roomId = selectedRoom
+
+            notifySuccessReservation(user, meeting)
 
             response.message
         } catch (e: FeignException) {
@@ -100,5 +105,21 @@ class MeetingService(
         meetingRepository.save(meeting)
 
         return message
+    }
+
+    private fun notifySuccessReservation(user: User, meeting: Meeting) {
+        mailService.sendMail(
+                subject = "Meeting Reservation Success",
+                message = """
+                            |Dear ${user.firstName},
+                            |
+                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has 
+                            been successfully reserved at room ${meeting.roomId}.
+                            |
+                            |Best Regards,
+                            |Jalas Team
+                        """.trimMargin(),
+                to = meeting.owner
+        )
     }
 }
