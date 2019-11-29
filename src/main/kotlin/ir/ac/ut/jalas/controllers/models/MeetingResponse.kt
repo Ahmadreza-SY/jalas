@@ -1,24 +1,22 @@
 package ir.ac.ut.jalas.controllers.models
 
 import ir.ac.ut.jalas.entities.Meeting
-import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
-import ir.ac.ut.jalas.entities.nested.TimeRange
 
 data class MeetingResponse(
         val id: String,
         val title: String,
         val status: MeetingStatus,
-        val time: TimeRange?,
+        val time: TimeRangeResponse?,
         val roomId: Int?,
-        val slots: List<TimeSlot>
+        val slots: List<TimeSlotResponse>
 ) {
     constructor(entity: Meeting) : this(
             entity.id ?: "NA",
             entity.title,
             entity.status,
-            entity.time,
+            entity.time?.let { TimeRangeResponse(it) },
             entity.roomId,
-            entity.slots
+            entity.slots.map { TimeSlotResponse(it) }
     )
 }
