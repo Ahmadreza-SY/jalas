@@ -1,6 +1,6 @@
 package ir.ac.ut.jalas.entities
 
-import ir.ac.ut.jalas.entities.nested.MeetingPoll
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import org.springframework.data.annotation.Id
@@ -13,7 +13,7 @@ data class Meeting(
         val title: String,
         var status: MeetingStatus,
         var time: TimeRange? = null,
-        val votes: List<MeetingPoll> = emptyList(),
+        val slots: List<TimeSlot> = emptyList(),
         var roomId: Int? = null,
         val owner: String,
         var reservationTime: TimeRange? = null

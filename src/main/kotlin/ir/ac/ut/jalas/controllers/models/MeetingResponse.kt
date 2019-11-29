@@ -1,7 +1,7 @@
 package ir.ac.ut.jalas.controllers.models
 
 import ir.ac.ut.jalas.entities.Meeting
-import ir.ac.ut.jalas.entities.nested.MeetingPoll
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
 
@@ -11,7 +11,7 @@ data class MeetingResponse(
         val status: MeetingStatus,
         val time: TimeRange?,
         val roomId: Int?,
-        val votes: List<MeetingPoll>
+        val slots: List<TimeSlot>
 ) {
     constructor(entity: Meeting) : this(
             entity.id ?: "NA",
@@ -19,6 +19,6 @@ data class MeetingResponse(
             entity.status,
             entity.time,
             entity.roomId,
-            entity.votes
+            entity.slots
     )
 }

@@ -1,7 +1,7 @@
 package ir.ac.ut.jalas.controllers.models
 
 import ir.ac.ut.jalas.entities.Meeting
-import ir.ac.ut.jalas.entities.nested.MeetingPoll
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
@@ -12,11 +12,11 @@ data class MeetingCreationRequest(
         val title: String,
         @field:NotNull
         @field:NotEmpty
-        val votes: List<MeetingPoll>
+        val slots: List<TimeSlot>
 ) {
     fun extract(owner: String) = Meeting(
             title = title,
-            votes = votes,
+            slots = slots,
             owner = owner,
             status = MeetingStatus.ELECTING
     )
