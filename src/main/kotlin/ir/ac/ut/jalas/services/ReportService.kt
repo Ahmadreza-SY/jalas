@@ -7,9 +7,14 @@ import org.springframework.stereotype.Service
 @Service
 class ReportService(val meetingRepository: MeetingRepository) {
 
+    fun getReservationTimeAvg(): Double {
+        val reservedMeetings = meetingRepository.findByStatus(MeetingStatus.RESERVED)
+        return reservedMeetings.mapNotNull { it.reservationTime?.calcDuration() }.average()
+    }
+
     fun getAllReservedRooms(): List<Int> {
         val reservedMeetings = meetingRepository.findByStatus(MeetingStatus.RESERVED)
-        return reservedMeetings.mapNotNull { it.roomId }
+        return reservedMeetings.mapNotNull { it.roomId }.distinct()
     }
 
     fun getCanceledMeetings(): List<String> {

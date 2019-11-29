@@ -10,7 +10,7 @@ import ir.ac.ut.jalas.controllers.models.MeetingResponse
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
-import ir.ac.ut.jalas.entities.nested.MeetingTime
+import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.exceptions.EntityNotFoundError
 import ir.ac.ut.jalas.exceptions.InternalServerError
@@ -21,6 +21,7 @@ import ir.ac.ut.jalas.utils.toReserveFormat
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class MeetingService(
@@ -45,7 +46,7 @@ class MeetingService(
         return MeetingResponse(entity)
     }
 
-    fun getAvailableRooms(time: MeetingTime): AvailableRoomsResponse {
+    fun getAvailableRooms(time: TimeRange): AvailableRoomsResponse {
         try {
             return reservationClient.getAvailableRooms(
                     start = time.start.toReserveFormat(),
@@ -59,6 +60,7 @@ class MeetingService(
     fun reserveMeeting(meetingId: String, request: MeetingReservationRequest): String? {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+        meeting.reservationTime = TimeRange(request.pageEntryTime, Date())
         val message = reserveMeeting(meeting, request.selectedRoom, request.selectedTime)
         return when (meeting.status) {
             MeetingStatus.RESERVED -> message
@@ -68,7 +70,7 @@ class MeetingService(
         }
     }
 
-    fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: MeetingTime): String? {
+    fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: TimeRange): String? {
         val message = try {
             val user = authService.getLoggedInUser()
             val response = reservationClient.reserveRoom(
@@ -83,6 +85,7 @@ class MeetingService(
             meeting.status = MeetingStatus.RESERVED
             meeting.time = selectedTime
             meeting.roomId = selectedRoom
+            meeting.reservationTime = meeting.reservationTime?.copy(end = Date())
 
             notifySuccessReservation(user, meeting)
 
@@ -92,7 +95,7 @@ class MeetingService(
                 meeting.status = MeetingStatus.ELECTING
                 meeting.time = null
                 meeting.roomId = null
-
+                meeting.reservationTime = null
             } else {
                 meeting.status = MeetingStatus.PENDING
                 meeting.time = selectedTime

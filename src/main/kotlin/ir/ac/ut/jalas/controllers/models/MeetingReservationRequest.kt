@@ -1,11 +1,14 @@
 package ir.ac.ut.jalas.controllers.models
 
-import ir.ac.ut.jalas.entities.nested.MeetingTime
+import ir.ac.ut.jalas.entities.nested.TimeRange
+import java.util.*
 import javax.validation.constraints.NotNull
 
 data class MeetingReservationRequest(
         @field:NotNull
-        val selectedTime: MeetingTime,
+        val selectedTime: TimeRange,
         @field:NotNull
-        val selectedRoom: Int
+        val selectedRoom: Int,
+        @field:NotNull
+        val pageEntryTime: Date
 )

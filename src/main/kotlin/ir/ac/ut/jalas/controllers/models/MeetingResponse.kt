@@ -3,13 +3,13 @@ package ir.ac.ut.jalas.controllers.models
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.nested.MeetingPoll
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
-import ir.ac.ut.jalas.entities.nested.MeetingTime
+import ir.ac.ut.jalas.entities.nested.TimeRange
 
 data class MeetingResponse(
         val id: String,
         val title: String,
         val status: MeetingStatus,
-        val time: MeetingTime?,
+        val time: TimeRange?,
         val roomId: Int?,
         val votes: List<MeetingPoll>
 ) {

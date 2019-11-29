@@ -3,7 +3,7 @@ package ir.ac.ut.jalas.controllers
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
-import ir.ac.ut.jalas.entities.nested.MeetingTime
+import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.services.MeetingService
 import ir.ac.ut.jalas.utils.ErrorType
@@ -30,7 +30,7 @@ class MeetingController(val meetingService: MeetingService) {
             @RequestParam start: Long,
             @RequestParam end: Long
     ): AvailableRoomsResponse {
-        val time = MeetingTime(start, end)
+        val time = TimeRange(start, end)
         if (time.notValid())
             throw BadRequestError(ErrorType.INVALID_DATE_RANGE)
         return meetingService.getAvailableRooms(time)

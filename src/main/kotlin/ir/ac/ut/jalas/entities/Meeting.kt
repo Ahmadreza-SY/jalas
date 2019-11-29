@@ -2,7 +2,7 @@ package ir.ac.ut.jalas.entities
 
 import ir.ac.ut.jalas.entities.nested.MeetingPoll
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
-import ir.ac.ut.jalas.entities.nested.MeetingTime
+import ir.ac.ut.jalas.entities.nested.TimeRange
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
@@ -12,8 +12,9 @@ data class Meeting(
         var id: String? = null,
         val title: String,
         var status: MeetingStatus,
-        var time: MeetingTime? = null,
+        var time: TimeRange? = null,
         val votes: List<MeetingPoll> = emptyList(),
         var roomId: Int? = null,
-        val owner: String
+        val owner: String,
+        var reservationTime: TimeRange? = null
 )
