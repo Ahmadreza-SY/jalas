@@ -18,6 +18,7 @@ class ReservationChecker(
     @Scheduled(fixedDelay = 30 * 1000L)
     fun checkPendingReservations() {
         val pendingMeetings = meetingRepository.findByStatus(MeetingStatus.PENDING)
+        logger.info("checkPendingReservations started with ${pendingMeetings.size} records to check")
         pendingMeetings.map {
             it to meetingService.reserveMeeting(
                     meeting = it,

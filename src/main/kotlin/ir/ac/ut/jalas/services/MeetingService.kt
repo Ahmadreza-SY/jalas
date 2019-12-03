@@ -18,6 +18,7 @@ import ir.ac.ut.jalas.repositories.MeetingRepository
 import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
 import ir.ac.ut.jalas.utils.toReserveFormat
+import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -30,6 +31,7 @@ class MeetingService(
         val authService: AuthService,
         val mailService: MailService
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
     fun getMeetings() = meetingRepository.findAll().map { MeetingResponse(it) }
 
@@ -53,6 +55,7 @@ class MeetingService(
                     end = time.end.toReserveFormat()
             )
         } catch (e: FeignException) {
+            logger.error("Error in getting available rooms", e)
             throw InternalServerError(e.extractErrorMessage())
         }
     }
@@ -116,8 +119,7 @@ class MeetingService(
                 message = """
                             |Dear ${user.firstName},
                             |
-                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has 
-                            been successfully reserved at room ${meeting.roomId}.
+                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
                             |
                             |Best Regards,
                             |Jalas Team
