@@ -49,4 +49,8 @@ class MeetingController(val meetingService: MeetingService) {
         meetingService.reserveMeeting(meetingId, request)
     }
 
+    @DeleteMapping("/{meetingId}/reserve")
+    fun cancelMeetingReservation(@PathVariable meetingId: String) =
+            meetingService.cancelMeetingReservation(meetingId)
+
 }

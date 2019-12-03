@@ -125,4 +125,11 @@ class MeetingService(
                 to = meeting.owner
         )
     }
+
+    fun cancelMeetingReservation(meetingId: String) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+        meeting.status = MeetingStatus.CANCELED
+        meetingRepository.save(meeting)
+    }
 }
