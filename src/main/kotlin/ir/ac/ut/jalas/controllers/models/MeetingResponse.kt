@@ -9,7 +9,8 @@ data class MeetingResponse(
         val status: MeetingStatus,
         val time: TimeRangeResponse?,
         val roomId: Int?,
-        val slots: List<TimeSlotResponse>
+        val slots: List<TimeSlotResponse>,
+        val owner: String
 ) {
     constructor(entity: Meeting) : this(
             entity.id ?: "NA",
@@ -17,6 +18,7 @@ data class MeetingResponse(
             entity.status,
             entity.time?.let { TimeRangeResponse(it) },
             entity.roomId,
-            entity.slots.map { TimeSlotResponse(it) }
+            entity.slots.map { TimeSlotResponse(it) },
+            entity.owner
     )
 }
