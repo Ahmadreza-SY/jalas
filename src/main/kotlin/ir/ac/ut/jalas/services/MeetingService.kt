@@ -54,7 +54,7 @@ class MeetingService(
                             |
                             |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
                             |Please visit the following link to vote your available time:
-                            |$dashboardUrl/${meeting.id}/vote/$guest
+                            |$dashboardUrl/meeting/${meeting.id}/vote/$guest
                             |
                             |Best Regards,
                             |Jalas Team
