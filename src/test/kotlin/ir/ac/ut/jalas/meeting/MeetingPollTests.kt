@@ -83,7 +83,6 @@ class MeetingPollTests {
                 slot = TimeRange(10, 20),
                 vote = VoteOption.DISAGREE
         )
-        meetingService.voteForMeeting(meeting.id, voteRequest)
         assertThrows<EntityNotFoundError> { meetingService.voteForMeeting(meeting.id, voteRequest) }
     }
 
