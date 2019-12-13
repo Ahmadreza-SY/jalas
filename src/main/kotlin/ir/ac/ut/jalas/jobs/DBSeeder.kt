@@ -2,7 +2,6 @@ package ir.ac.ut.jalas.jobs
 
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.entities.nested.TimeRange
-import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.services.MeetingService
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
@@ -37,11 +36,12 @@ class DBSeeder(val meetingService: MeetingService) : CommandLineRunner {
     private fun makeRandomMeetingCreationRequest(index: Int): MeetingCreationRequest {
         return MeetingCreationRequest(
                 title = "Meeting $index",
-                slots = (0..5).map { makeRandomTimeSlot() }
+                slots = (0..5).map { makeRandomTimeSlot() },
+                guests = emptyList()
         )
     }
 
-    private fun makeRandomTimeSlot(): TimeSlot {
+    private fun makeRandomTimeSlot(): TimeRange {
         val now = Date().time
         val start = DateTime(Random.nextLong(from = now, until = now + Duration.of(2, ChronoUnit.DAYS).toMillis()))
                 .withMillisOfSecond(0)
@@ -50,11 +50,7 @@ class DBSeeder(val meetingService: MeetingService) : CommandLineRunner {
                 .toDate()
                 .time
         val end = start + Random.nextInt(from = 1, until = 4) * Duration.of(1, ChronoUnit.HOURS).toMillis()
-        return TimeSlot(
-                agreeingUsers = getRandomEmails(),
-                disagreeingUsers = getRandomEmails(),
-                time = TimeRange(start, end)
-        )
+        return TimeRange(start, end)
     }
 
     private fun getRandomEmails(): List<String> {
