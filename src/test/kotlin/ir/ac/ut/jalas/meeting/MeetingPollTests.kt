@@ -2,9 +2,10 @@ package ir.ac.ut.jalas.meeting
 
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
+import ir.ac.ut.jalas.controllers.models.VoteOption
 import ir.ac.ut.jalas.controllers.models.VoteRequest
 import ir.ac.ut.jalas.entities.nested.TimeRange
-import ir.ac.ut.jalas.exceptions.PreconditionFailedError
+import ir.ac.ut.jalas.exceptions.EntityNotFoundError
 import ir.ac.ut.jalas.services.MeetingService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -41,7 +42,7 @@ class MeetingPollTests {
         val voteRequest = VoteRequest(
                 email = MEETING_GUEST,
                 slot = MEETING_SLOT,
-                agree = true
+                vote = VoteOption.AGREE
         )
         meetingService.voteForMeeting(meeting.id, voteRequest)
 
@@ -53,15 +54,37 @@ class MeetingPollTests {
     }
 
     @Test
-    fun shouldNotVoteTwice() {
+    fun shouldCancelVoteSuccessfully() {
+        val meeting = createMeeting()
+        var voteRequest = VoteRequest(
+                email = MEETING_GUEST,
+                slot = MEETING_SLOT,
+                vote = VoteOption.AGREE
+        )
+        meetingService.voteForMeeting(meeting.id, voteRequest)
+        voteRequest = VoteRequest(
+                email = MEETING_GUEST,
+                slot = MEETING_SLOT,
+                vote = VoteOption.REVOKE
+        )
+        meetingService.voteForMeeting(meeting.id, voteRequest)
+
+        val updatedMeeting = meetingService.getMeeting(meeting.id)
+        val agreeingUsers = updatedMeeting.slots.first().agreeingUsers
+
+        assert(agreeingUsers.isEmpty())
+    }
+
+    @Test
+    fun shouldNotVoteForUnknownTime() {
         val meeting = createMeeting()
         val voteRequest = VoteRequest(
                 email = MEETING_GUEST,
-                slot = MEETING_SLOT,
-                agree = false
+                slot = TimeRange(10, 20),
+                vote = VoteOption.DISAGREE
         )
         meetingService.voteForMeeting(meeting.id, voteRequest)
-        assertThrows<PreconditionFailedError> { meetingService.voteForMeeting(meeting.id, voteRequest) }
+        assertThrows<EntityNotFoundError> { meetingService.voteForMeeting(meeting.id, voteRequest) }
     }
 
     private fun createMeeting(): MeetingResponse {

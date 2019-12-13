@@ -17,6 +17,7 @@ enum class ErrorType {
 
     // 417
     USER_ALREADY_VOTED,
+    USER_NOT_VOTED,
 
     // 500
     INTERNAL_SERVER_ERROR

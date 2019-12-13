@@ -14,5 +14,5 @@ data class VoteRequest(
         val slot: TimeRange,
 
         @field:NotNull
-        val agree: Boolean?
+        val vote: VoteOption
 )

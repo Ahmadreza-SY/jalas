@@ -4,10 +4,7 @@ import feign.FeignException
 import ir.ac.ut.jalas.clients.ReservationClient
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.clients.models.ReservationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingResponse
-import ir.ac.ut.jalas.controllers.models.VoteRequest
+import ir.ac.ut.jalas.controllers.models.*
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
@@ -162,22 +159,32 @@ class MeetingService(
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
 
-        if (!meeting.guests.contains(request.email))
+        if (!meeting.guests.contains(request.email.toLowerCase()))
             throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
 
         val slot = meeting.slots.firstOrNull { it.time == request.slot }
                 ?: throw EntityNotFoundError(ErrorType.SLOT_NOT_FOUND)
 
-        if (request.agree == true) {
-            if (slot.agreeingUsers.contains(request.email))
-                throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-            slot.agreeingUsers += request.email
-            slot.disagreeingUsers -= request.email
-        } else {
-            if (slot.disagreeingUsers.contains(request.email))
-                throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-            slot.disagreeingUsers += request.email
-            slot.agreeingUsers -= request.email
+        when (request.vote) {
+            VoteOption.AGREE -> {
+                if (slot.agreeingUsers.contains(request.email))
+                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+                slot.agreeingUsers += request.email
+                slot.disagreeingUsers -= request.email
+            }
+            VoteOption.DISAGREE -> {
+                if (slot.disagreeingUsers.contains(request.email))
+                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+                slot.disagreeingUsers += request.email
+                slot.agreeingUsers -= request.email
+            }
+            VoteOption.REVOKE -> {
+                when {
+                    slot.agreeingUsers.contains(request.email) -> slot.agreeingUsers -= request.email
+                    slot.disagreeingUsers.contains(request.email) -> slot.disagreeingUsers -= request.email
+                    else -> throw PreconditionFailedError(ErrorType.USER_NOT_VOTED)
+                }
+            }
         }
         meetingRepository.save(meeting)
     }
