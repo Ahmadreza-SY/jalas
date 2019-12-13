@@ -19,6 +19,7 @@ import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
 import ir.ac.ut.jalas.utils.toReserveFormat
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -29,7 +30,8 @@ class MeetingService(
         val meetingRepository: MeetingRepository,
         val reservationClient: ReservationClient,
         val authService: AuthService,
-        val mailService: MailService
+        val mailService: MailService,
+        @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -39,7 +41,27 @@ class MeetingService(
         val owner = authService.getLoggedInUser()
         val entity = request.extract(owner.email)
         meetingRepository.save(entity)
+        notifyGuests(entity, owner)
         return MeetingResponse(entity)
+    }
+
+    private fun notifyGuests(meeting: Meeting, owner: User) {
+        meeting.guests.onEach { guest ->
+            mailService.sendMail(
+                    subject = "Meeting ${meeting.title} Invitation",
+                    message = """
+                            |Dear Guest,
+                            |
+                            |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
+                            |Please visit the following link to vote your available time:
+                            |$dashboardUrl/${meeting.id}/vote/$guest
+                            |
+                            |Best Regards,
+                            |Jalas Team
+                        """.trimMargin(),
+                    to = guest
+            )
+        }
     }
 
     fun getMeeting(meetingId: String): MeetingResponse {
