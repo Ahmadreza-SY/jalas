@@ -1,9 +1,0 @@
-{
-  "properties": [
-    {
-      "name": "jalas.dashboard.url",
-      "type": "java.lang.String",
-      "description": "This is the url of Jalas dashboard."
-    }
-  ]
-}
