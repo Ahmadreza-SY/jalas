@@ -13,4 +13,6 @@ data class User(
         val firstName: String,
         val lastName: String,
         val password: String
-)
+) {
+    fun fullName(): String = "$firstName $lastName"
+}

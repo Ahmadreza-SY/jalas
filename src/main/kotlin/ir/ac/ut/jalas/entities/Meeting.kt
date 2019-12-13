@@ -16,5 +16,6 @@ data class Meeting(
         val slots: List<TimeSlot> = emptyList(),
         var roomId: Int? = null,
         val owner: String,
-        var reservationTime: TimeRange? = null
+        var reservationTime: TimeRange? = null,
+        val guests: List<String> = emptyList()
 )
