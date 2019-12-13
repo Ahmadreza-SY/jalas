@@ -10,7 +10,7 @@
     </parent>
     <groupId>ir.ac.ut.jalas</groupId>
     <artifactId>Jalas</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>Jalas</name>
     <description>Jalas SE Project</description>
 
