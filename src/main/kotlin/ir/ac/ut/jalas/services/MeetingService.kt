@@ -7,13 +7,12 @@ import ir.ac.ut.jalas.clients.models.ReservationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
+import ir.ac.ut.jalas.controllers.models.VoteRequest
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
-import ir.ac.ut.jalas.exceptions.BadRequestError
-import ir.ac.ut.jalas.exceptions.EntityNotFoundError
-import ir.ac.ut.jalas.exceptions.InternalServerError
+import ir.ac.ut.jalas.exceptions.*
 import ir.ac.ut.jalas.repositories.MeetingRepository
 import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
@@ -54,7 +53,7 @@ class MeetingService(
                             |
                             |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
                             |Please visit the following link to vote your available time:
-                            |$dashboardUrl/${meeting.id}/vote/$guest
+                            |$dashboardUrl/meeting/${meeting.id}/vote/$guest
                             |
                             |Best Regards,
                             |Jalas Team
@@ -154,6 +153,30 @@ class MeetingService(
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
         meeting.status = MeetingStatus.CANCELED
+        meetingRepository.save(meeting)
+    }
+
+    fun voteForMeeting(meetingId: String, request: VoteRequest) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+
+        if (!meeting.guests.contains(request.email))
+            throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
+
+        val slot = meeting.slots.firstOrNull { it.time == request.slot }
+                ?: throw EntityNotFoundError(ErrorType.SLOT_NOT_FOUND)
+
+        if (request.agree == true) {
+            if (slot.agreeingUsers.contains(request.email))
+                throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+            slot.agreeingUsers += request.email
+            slot.disagreeingUsers -= request.email
+        } else {
+            if (slot.disagreeingUsers.contains(request.email))
+                throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+            slot.disagreeingUsers += request.email
+            slot.agreeingUsers -= request.email
+        }
         meetingRepository.save(meeting)
     }
 }
