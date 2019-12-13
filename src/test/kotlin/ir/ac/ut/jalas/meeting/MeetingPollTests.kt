@@ -1,4 +1,4 @@
-package ir.ac.ut.jalas
+package ir.ac.ut.jalas.meeting
 
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingResponse
@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("test")
 @SpringBootTest
-class MeetingTests {
+class MeetingPollTests {
 
     @Autowired
     lateinit var meetingService: MeetingService
