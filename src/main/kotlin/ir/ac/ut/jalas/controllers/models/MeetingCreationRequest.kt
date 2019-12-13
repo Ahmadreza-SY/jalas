@@ -4,7 +4,6 @@ import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.entities.nested.TimeSlot
-import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
@@ -17,7 +16,6 @@ data class MeetingCreationRequest(
         val slots: List<TimeRange>,
         @field:NotNull
         @field:NotEmpty
-        @field:Email
         val guests: List<String>
 ) {
     fun extract(owner: String) = Meeting(
