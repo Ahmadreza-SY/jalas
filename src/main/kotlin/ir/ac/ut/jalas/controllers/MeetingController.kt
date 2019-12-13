@@ -3,6 +3,7 @@ package ir.ac.ut.jalas.controllers
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
 import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
+import ir.ac.ut.jalas.controllers.models.MeetingResponse
 import ir.ac.ut.jalas.controllers.models.VoteRequest
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
@@ -21,8 +22,11 @@ class MeetingController(val meetingService: MeetingService) {
     fun getMeetings() = meetingService.getMeetings()
 
     @PostMapping
-    fun createMeeting(@Valid @RequestBody request: MeetingCreationRequest) =
-            meetingService.createMeeting(request)
+    fun createMeeting(@Valid @RequestBody request: MeetingCreationRequest): MeetingResponse {
+        if (request.slots.any { it.notValid() })
+            throw BadRequestError(ErrorType.INVALID_DATE_RANGE)
+        return meetingService.createMeeting(request)
+    }
 
     @GetMapping("/{meetingId}")
     fun getMeeting(@PathVariable meetingId: String) = meetingService.getMeeting(meetingId)
@@ -31,7 +35,11 @@ class MeetingController(val meetingService: MeetingService) {
     fun voteForMeeting(
             @PathVariable meetingId: String,
             @Valid @RequestBody request: VoteRequest
-    ) = meetingService.voteForMeeting(meetingId, request)
+    ) {
+        if (request.slot.notValid())
+            throw BadRequestError(ErrorType.INVALID_DATE_RANGE)
+        meetingService.voteForMeeting(meetingId, request)
+    }
 
     @GetMapping("/available-rooms")
     fun getAvailableRooms(

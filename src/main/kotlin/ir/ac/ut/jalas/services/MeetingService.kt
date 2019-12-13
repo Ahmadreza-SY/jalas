@@ -141,6 +141,8 @@ class MeetingService(
                             |Dear ${user.firstName},
                             |
                             |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
+                            |To view more info about the meeting, click on link bellow:
+                            |$dashboardUrl/meeting/${meeting.id}
                             |
                             |Best Regards,
                             |Jalas Team
