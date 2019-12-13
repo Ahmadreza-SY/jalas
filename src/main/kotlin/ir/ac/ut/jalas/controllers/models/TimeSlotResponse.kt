@@ -10,6 +10,6 @@ data class TimeSlotResponse(
     constructor(entity: TimeSlot) : this(
             entity.agreeingUsers,
             entity.disagreeingUsers,
-            entity.time.let { TimeRangeResponse(it) }
+            TimeRangeResponse(entity.time)
     )
 }

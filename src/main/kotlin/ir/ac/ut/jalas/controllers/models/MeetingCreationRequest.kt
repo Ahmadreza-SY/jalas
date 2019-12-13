@@ -20,7 +20,7 @@ data class MeetingCreationRequest(
 ) {
     fun extract(owner: String) = Meeting(
             title = title,
-            slots = slots.map { TimeSlot(agreeingUsers = emptyList(), disagreeingUsers = emptyList(), time = it) },
+            slots = slots.map { TimeSlot(agreeingUsers = mutableListOf(), disagreeingUsers = mutableListOf(), time = it) },
             owner = owner,
             status = MeetingStatus.ELECTING,
             guests = guests
