@@ -132,9 +132,10 @@ class MeetingService(
     }
 
     private fun notifySuccessReservation(user: User, meeting: Meeting) {
-        mailService.sendMail(
-                subject = "Meeting Reservation Success",
-                message = """
+        (meeting.guests + meeting.owner).forEach { participant ->
+            mailService.sendMail(
+                    subject = "Meeting Reservation Success",
+                    message = """
                             |Dear ${user.firstName},
                             |
                             |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
@@ -144,8 +145,9 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                to = meeting.owner
-        )
+                    to = participant
+            )
+        }
     }
 
     fun cancelMeetingReservation(meetingId: String) {
