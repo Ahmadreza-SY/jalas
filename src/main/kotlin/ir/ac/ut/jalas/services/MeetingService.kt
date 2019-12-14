@@ -133,10 +133,11 @@ class MeetingService(
 
     private fun notifySuccessReservation(user: User, meeting: Meeting) {
         (meeting.guests + meeting.owner).forEach { participant ->
+            val participantName = if (participant == meeting.owner) user.firstName else "Participant"
             mailService.sendMail(
                     subject = "Meeting Reservation Success",
                     message = """
-                            |Dear ${user.firstName},
+                            |Dear $participantName,
                             |
                             |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
                             |To view more info about the meeting, click on link bellow:
