@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.*
 
 @Profile("!test")
-@FeignClient(url = "http://213.233.176.40", name = "reservation")
+@FeignClient(url = "\${jalas.reservation.url}", name = "reservation")
 interface ReservationClient {
     @GetMapping("/available_rooms")
     fun getAvailableRooms(@RequestParam start: String, @RequestParam end: String): AvailableRoomsResponse
