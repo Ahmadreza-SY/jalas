@@ -31,7 +31,11 @@ class MeetingService(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
-    fun getMeetings() = meetingRepository.findAll().map { MeetingResponse(it) }
+    fun getMeetings(): List<MeetingResponse> {
+        val user = authService.getLoggedInUser()
+        return meetingRepository.findByOwnerOrGuestsIn(user.email, listOf(user.email))
+                .map { MeetingResponse(it) }
+    }
 
     fun createMeeting(request: MeetingCreationRequest): MeetingResponse {
         val owner = authService.getLoggedInUser()
