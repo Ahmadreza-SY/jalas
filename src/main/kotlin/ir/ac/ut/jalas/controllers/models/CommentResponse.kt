@@ -7,12 +7,12 @@ data class CommentResponse(
         val id: String,
         val owner: String,
         val content: String,
-        val creationDate: Date
+        val creationDate: Long
 ) {
     constructor(entity: Comment) : this(
             entity.id ?: "NA",
             entity.owner,
             entity.content,
-            entity.creationDate
+            entity.creationDate.time
     )
 }
