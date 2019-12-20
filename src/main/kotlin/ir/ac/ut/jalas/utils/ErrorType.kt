@@ -7,6 +7,7 @@ enum class ErrorType {
     INVALID_DATE_RANGE,
     INVALID_TIME,
     ROOM_ALREADY_RESERVED,
+    SLOT_ALREADY_EXISTS,
 
     // 403
     NOT_MEETING_GUEST,
