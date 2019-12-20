@@ -209,4 +209,8 @@ class MeetingService(
 
         return commentService.createComment(meetingId, user.email, request)
     }
+
+    fun getMyPolls(): List<Meeting> {
+        return meetingRepository.findByOwnerAndStatus(authService.getLoggedInUser().email, MeetingStatus.ELECTING)
+    }
 }

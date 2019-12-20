@@ -18,6 +18,9 @@ class MeetingController(val meetingService: MeetingService) {
     @GetMapping
     fun getMeetings() = meetingService.getMeetings()
 
+    @GetMapping("/polls")
+    fun getMyPolls() = meetingService.getMyPolls()
+
     @PostMapping
     fun createMeeting(@Valid @RequestBody request: MeetingCreationRequest): MeetingResponse {
         if (request.slots.any { it.notValid() })
