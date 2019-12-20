@@ -63,9 +63,9 @@ class DBSeeder(
     }
 
     override fun run(vararg args: String?) {
-        createUsers()
-        login()
-        createMeetings()
+//        createUsers()
+//        login()
+//        createMeetings()
     }
 
     private fun makeRandomMeetingCreationRequest(index: Int): MeetingCreationRequest {
