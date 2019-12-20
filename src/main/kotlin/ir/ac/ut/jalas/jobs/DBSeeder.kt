@@ -63,8 +63,8 @@ class DBSeeder(
     }
 
     override fun run(vararg args: String?) {
-        login()
         createUsers()
+        login()
         createMeetings()
     }
 
