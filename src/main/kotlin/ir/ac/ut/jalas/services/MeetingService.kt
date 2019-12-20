@@ -56,7 +56,7 @@ class MeetingService(
         if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
             throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
 
-        meeting.slots.addAll(updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) })
+        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) }
         meetingRepository.save(meeting)
         return MeetingResponse(meeting)
     }
