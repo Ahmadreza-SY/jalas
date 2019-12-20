@@ -28,6 +28,12 @@ class MeetingController(val meetingService: MeetingService) {
     @GetMapping("/{meetingId}")
     fun getMeeting(@PathVariable meetingId: String) = meetingService.getMeeting(meetingId)
 
+    @PutMapping("/{meetingId}")
+    fun updateMeetingSlots(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody updateRequest: MeetingUpdateRequest
+    ) = meetingService.updateMeeting(meetingId, updateRequest)
+
     @PutMapping("/{meetingId}/vote")
     fun voteForMeeting(
             @PathVariable meetingId: String,

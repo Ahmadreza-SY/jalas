@@ -9,6 +9,7 @@ import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.exceptions.*
 import ir.ac.ut.jalas.repositories.MeetingRepository
 import ir.ac.ut.jalas.utils.ErrorType
@@ -44,6 +45,20 @@ class MeetingService(
         meetingRepository.save(entity)
         notifyGuests(entity, owner)
         return MeetingResponse(entity)
+    }
+
+    fun updateMeeting(meetingId: String, updateRequest: MeetingUpdateRequest): MeetingResponse {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
+
+        val newSlots = updateRequest.newSlots
+        val oldSlots = meeting.slots.map { it.time }
+        if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
+            throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
+
+        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) }
+        meetingRepository.save(meeting)
+        return MeetingResponse(meeting)
     }
 
     private fun notifyGuests(meeting: Meeting, owner: User) {

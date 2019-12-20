@@ -13,7 +13,7 @@ data class Meeting(
         val title: String,
         var status: MeetingStatus,
         var time: TimeRange? = null,
-        val slots: List<TimeSlot> = emptyList(),
+        val slots: MutableList<TimeSlot> = mutableListOf(),
         var roomId: Int? = null,
         val owner: String,
         var reservationTime: TimeRange? = null,
