@@ -1,10 +1,7 @@
 package ir.ac.ut.jalas.controllers
 
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
-import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingReservationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingResponse
-import ir.ac.ut.jalas.controllers.models.VoteRequest
+import ir.ac.ut.jalas.controllers.models.*
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.services.MeetingService
@@ -67,5 +64,11 @@ class MeetingController(val meetingService: MeetingService) {
     @DeleteMapping("/{meetingId}/reserve")
     fun cancelMeetingReservation(@PathVariable meetingId: String) =
             meetingService.cancelMeetingReservation(meetingId)
+
+    @PostMapping("/{meetingId}/comment")
+    fun addCommentToMeeting(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody request: CommentCreationRequest
+    ) = meetingService.addCommentToMeeting(meetingId, request)
 
 }

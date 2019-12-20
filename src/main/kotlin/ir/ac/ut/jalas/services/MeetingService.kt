@@ -27,6 +27,7 @@ class MeetingService(
         val reservationClient: ReservationClient,
         val authService: AuthService,
         val mailService: MailService,
+        val commentService: CommentService,
         @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -63,7 +64,8 @@ class MeetingService(
     fun getMeeting(meetingId: String): MeetingResponse {
         val entity = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        return MeetingResponse(entity)
+        val comments = commentService.getComments(entity.id!!)
+        return MeetingResponse(entity, comments)
     }
 
     fun getAvailableRooms(time: TimeRange): AvailableRoomsResponse {
@@ -162,7 +164,7 @@ class MeetingService(
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
 
-        if (!meeting.guests.contains(request.email.toLowerCase()))
+        if (!meeting.isParticipant(request.email))
             throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
 
         val slot = meeting.slots.firstOrNull { it.time == request.slot }
@@ -190,5 +192,17 @@ class MeetingService(
             }
         }
         meetingRepository.save(meeting)
+    }
+
+    fun addCommentToMeeting(meetingId: String, request: CommentCreationRequest): CommentResponse {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+
+        val user = authService.getLoggedInUser()
+
+        if (!meeting.isParticipant(user.email))
+            throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
+
+        return commentService.createComment(meetingId, user.email, request)
     }
 }

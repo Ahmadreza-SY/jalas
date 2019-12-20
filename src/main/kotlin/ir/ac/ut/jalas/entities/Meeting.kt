@@ -1,8 +1,8 @@
 package ir.ac.ut.jalas.entities
 
-import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.TimeRange
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
@@ -18,4 +18,7 @@ data class Meeting(
         val owner: String,
         var reservationTime: TimeRange? = null,
         val guests: List<String> = emptyList()
-)
+) {
+    fun isParticipant(userEmail: String): Boolean =
+            guests.contains(userEmail.toLowerCase()) || owner == userEmail.toLowerCase()
+}
