@@ -71,4 +71,10 @@ class MeetingController(val meetingService: MeetingService) {
     fun cancelMeetingReservation(@PathVariable meetingId: String) =
             meetingService.cancelMeetingReservation(meetingId)
 
+    @PostMapping("/{meetingId}/comment")
+    fun addCommentToMeeting(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody request: CommentCreationRequest
+    ) = meetingService.addCommentToMeeting(meetingId, request)
+
 }

@@ -1,11 +1,16 @@
 package ir.ac.ut.jalas.jobs
 
 import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
+import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.TimeRange
+import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.services.MeetingService
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -14,7 +19,11 @@ import kotlin.random.Random
 
 
 @Component
-class DBSeeder(val meetingService: MeetingService) : CommandLineRunner {
+class DBSeeder(
+        val meetingService: MeetingService,
+        val userRepository: UserRepository,
+        val passwordEncoder: PasswordEncoder
+) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val users = listOf(
@@ -25,12 +34,38 @@ class DBSeeder(val meetingService: MeetingService) : CommandLineRunner {
             "no.replay.jalas@gmail.com"
     )
 
-    override fun run(vararg args: String?) {
+    private fun createUsers() {
+        users.forEach { email ->
+            val user = User(
+                    firstName = "first",
+                    lastName = "Last",
+                    email = email,
+                    password = passwordEncoder.encode("password")
+            )
+            try {
+                userRepository.save(user)
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun createMeetings() {
         (1..10)
                 .map { index -> makeRandomMeetingCreationRequest(index) }
                 .onEach { request -> meetingService.createMeeting(request) }
-
         logger.info("Added 10 random meetings")
+    }
+
+    private fun login() {
+        val user = userRepository.findByEmail("mohammad.76kiani@gmail.com")
+        val auth = UsernamePasswordAuthenticationToken(user, null, emptyList())
+        SecurityContextHolder.getContext().authentication = auth
+    }
+
+    override fun run(vararg args: String?) {
+        login()
+        createUsers()
+        createMeetings()
     }
 
     private fun makeRandomMeetingCreationRequest(index: Int): MeetingCreationRequest {

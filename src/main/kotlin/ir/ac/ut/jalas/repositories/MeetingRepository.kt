@@ -6,4 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface MeetingRepository: MongoRepository<Meeting, String> {
     fun findByStatus(status: MeetingStatus): List<Meeting>
+    fun findByOwnerOrGuestsIn(owner: String, guests: List<String>): List<Meeting>
 }
