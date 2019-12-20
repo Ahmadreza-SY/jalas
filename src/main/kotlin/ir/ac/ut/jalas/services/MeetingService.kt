@@ -64,7 +64,7 @@ class MeetingService(
     fun getMeeting(meetingId: String): MeetingResponse {
         val entity = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        val comments = commentService.getComments(entity.id!!)
+        val comments = commentService.getComments(meetingId)
         return MeetingResponse(entity, comments)
     }
 
