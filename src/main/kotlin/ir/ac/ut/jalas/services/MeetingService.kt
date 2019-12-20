@@ -58,7 +58,9 @@ class MeetingService(
 
         meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) }
         meetingRepository.save(meeting)
-        return MeetingResponse(meeting)
+
+        val comments = commentService.getComments(meetingId)
+        return MeetingResponse(meeting, comments)
     }
 
     private fun notifyGuests(meeting: Meeting, owner: User) {
