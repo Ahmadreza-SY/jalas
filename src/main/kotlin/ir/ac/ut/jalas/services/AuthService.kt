@@ -1,19 +1,17 @@
 package ir.ac.ut.jalas.services
 
 import ir.ac.ut.jalas.entities.User
-import org.apache.commons.codec.digest.DigestUtils
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
 @Service
 class AuthService {
 
-    fun getLoggedInUser() = User(
-            id = "1",
-            email = "mohammad.76kiani@gmail.com",
-            firstName = "Mohammad Reza",
-            lastName = "Kiani",
-            password = DigestUtils.sha1Hex("my-pass")
-    )
+    companion object {
+        val ADMIN_EMAILS = hashSetOf("mohammad.76kiani@gmail.com")
+    }
 
+    fun getLoggedInUser() = SecurityContextHolder.getContext().authentication.principal as User
+
+    fun isAdmin(): Boolean = getLoggedInUser().email in ADMIN_EMAILS
 }
-
