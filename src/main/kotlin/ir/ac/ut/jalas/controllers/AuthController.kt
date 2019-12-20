@@ -4,6 +4,8 @@ import ir.ac.ut.jalas.auth.JwtTokenUtil
 import ir.ac.ut.jalas.auth.JwtUserDetailsService
 import ir.ac.ut.jalas.controllers.models.JwtRequest
 import ir.ac.ut.jalas.controllers.models.JwtResponse
+import ir.ac.ut.jalas.controllers.models.UserResponse
+import ir.ac.ut.jalas.services.AuthService
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,7 +21,8 @@ import javax.validation.Valid
 class AuthController(
         val authenticationManager: AuthenticationManager,
         val jwtTokenUtil: JwtTokenUtil,
-        val userDetailsService: JwtUserDetailsService
+        val userDetailsService: JwtUserDetailsService,
+        val authService: AuthService
 ) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody authenticationRequest: JwtRequest): ResponseEntity<*> {
@@ -28,6 +31,9 @@ class AuthController(
         val token = jwtTokenUtil.generateToken(userDetails)
         return ResponseEntity.ok(JwtResponse(token))
     }
+
+    @GetMapping("/profile")
+    fun getProfile() = UserResponse(authService.getLoggedInUser())
 
     private fun authenticate(username: String, password: String) {
         try {
