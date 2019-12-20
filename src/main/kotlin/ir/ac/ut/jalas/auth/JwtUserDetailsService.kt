@@ -1,6 +1,6 @@
 package ir.ac.ut.jalas.auth
 
-import ir.ac.ut.jalas.exceptions.EntityNotFoundError
+import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.security.core.userdetails.User
@@ -13,7 +13,7 @@ class JwtUserDetailsService(val userRepository: UserRepository) : UserDetailsSer
 
     override fun loadUserByUsername(username: String): UserDetails {
         val user = userRepository.findByEmail(username)
-                ?: throw EntityNotFoundError(ErrorType.USER_NOT_FOUND)
+                ?: throw BadRequestError(ErrorType.INVALID_CREDENTIALS)
         return User(user.email, user.password, emptyList())
     }
 }

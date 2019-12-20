@@ -23,7 +23,7 @@ class WebSecurityConfig(
         private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
         private val jwtUserDetailsService: UserDetailsService,
         private val jwtRequestFilter: JwtRequestFilter
-        ) : WebSecurityConfigurerAdapter() {
+) : WebSecurityConfigurerAdapter() {
 
     @Autowired
     fun configureGlobal(auth: AuthenticationManagerBuilder) {
@@ -48,7 +48,7 @@ class WebSecurityConfig(
         httpSecurity
                 .csrf().disable()
                 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate").permitAll()
+                .authorizeRequests().antMatchers("/auth/**").permitAll()
                 .anyRequest()// all other requests need to be authenticated
                 .authenticated().and().exceptionHandling()// make sure we use stateless session; session won't be used to
                 // store user's state.
