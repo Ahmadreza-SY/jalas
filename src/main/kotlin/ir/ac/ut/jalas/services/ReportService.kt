@@ -1,11 +1,27 @@
 package ir.ac.ut.jalas.services
 
+import ir.ac.ut.jalas.controllers.models.GeneralReportResponse
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
+import ir.ac.ut.jalas.exceptions.AccessDeniedError
 import ir.ac.ut.jalas.repositories.MeetingRepository
+import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.stereotype.Service
 
 @Service
-class ReportService(val meetingRepository: MeetingRepository) {
+class ReportService(
+        val authService: AuthService,
+        val meetingRepository: MeetingRepository
+) {
+
+    fun getGeneralReport(): GeneralReportResponse {
+        if (!authService.isAdmin())
+            throw AccessDeniedError(ErrorType.NOT_ADMIN_USER)
+        return GeneralReportResponse(
+                reservationTimeAvg = getReservationTimeAvg(),
+                reservedRoomsCount = getAllReservedRooms().size,
+                canceledMeetingsCount = getCanceledMeetings().size
+        )
+    }
 
     fun getReservationTimeAvg(): Double {
         val reservedMeetings = meetingRepository.findByStatus(MeetingStatus.RESERVED)

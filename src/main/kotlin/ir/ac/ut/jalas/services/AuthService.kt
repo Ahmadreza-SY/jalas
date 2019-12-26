@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 class AuthService(val userRepository: UserRepository) {
 
     companion object {
-        val ADMIN_EMAILS = hashSetOf("mohammad.76kiani@gmail.com")
+        val ADMIN_EMAILS = setOf("mohammad.76kiani@gmail.com")
     }
 
     private fun getLoggedInUsername() =

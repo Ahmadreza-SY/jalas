@@ -16,6 +16,7 @@ enum class ErrorType {
 
     // 403
     NOT_MEETING_GUEST,
+    NOT_ADMIN_USER,
 
     // 404
     MEETING_NOT_FOUND,

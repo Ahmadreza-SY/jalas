@@ -33,7 +33,7 @@ class AuthController(
     }
 
     @GetMapping("/profile")
-    fun getProfile() = UserResponse(authService.getLoggedInUser())
+    fun getProfile() = UserResponse(authService.getLoggedInUser(), authService.isAdmin())
 
     private fun authenticate(username: String, password: String) {
         try {
