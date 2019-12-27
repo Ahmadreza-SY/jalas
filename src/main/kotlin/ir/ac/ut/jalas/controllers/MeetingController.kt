@@ -18,7 +18,7 @@ class MeetingController(val meetingService: MeetingService) {
     @GetMapping
     fun getMeetings() = meetingService.getMeetings()
 
-    @GetMapping("/polls")
+    @GetMapping("/poll")
     fun getMyPolls() = meetingService.getMyPolls()
 
     @PostMapping
