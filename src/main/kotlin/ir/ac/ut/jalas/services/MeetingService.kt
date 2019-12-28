@@ -212,7 +212,25 @@ class MeetingService(
                 }
             }
         }
+        sendNewVoteNotification(request, meeting)
         meetingRepository.save(meeting)
+    }
+
+    private fun sendNewVoteNotification(request: VoteRequest, meeting: Meeting) {
+        mailService.sendMail(
+                subject = "New Vote for Meeting: ${meeting.title}",
+                message = """
+                            |Dear user,
+                            |
+                            |User with email: ${request.email} has voted for ${request.vote.name} for time slot ${request.slot.start.toReserveFormat()}-${request.slot.end.toReserveFormat()}
+                            |To view more info about the meeting, click on link bellow:
+                            |$dashboardUrl/meeting/${meeting.id}
+                            |
+                            |Best Regards,
+                            |Jalas Team
+                        """.trimMargin(),
+                to = meeting.owner
+        )
     }
 
     fun addCommentToMeeting(meetingId: String, request: CommentCreationRequest): CommentResponse {
