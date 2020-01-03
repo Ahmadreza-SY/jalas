@@ -4,11 +4,12 @@ import ir.ac.ut.jalas.entities.Comment
 import java.util.*
 
 data class CommentDto(
-        val id: String?,
+        val id: String? = UUID.randomUUID().toString(),
         val owner: String,
         val content: String,
         val creationDate: Long,
-        val replies: List<CommentDto>
+        val replies: List<CommentDto>,
+        val meetingId: String
 ) {
     fun extract(meetingId: String): Comment {
         return Comment(
@@ -22,10 +23,11 @@ data class CommentDto(
     }
 
     constructor(entity: Comment) : this(
-            entity.id,
-            entity.owner,
-            entity.content,
-            entity.creationDate.time,
-            entity.replies.map { CommentDto(it) }
+            id = entity.id,
+            owner= entity.owner,
+            content = entity.content,
+            creationDate = entity.creationDate.time,
+            replies = entity.replies.map { CommentDto(it) },
+            meetingId = entity.meetingId
     )
 }
