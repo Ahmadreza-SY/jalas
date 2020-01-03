@@ -4,7 +4,7 @@ import ir.ac.ut.jalas.entities.Comment
 import java.util.*
 
 data class CommentDto(
-        val id: String,
+        val id: String?,
         val owner: String,
         val content: String,
         val creationDate: Long,
@@ -22,7 +22,7 @@ data class CommentDto(
     }
 
     constructor(entity: Comment) : this(
-            entity.id ?: "NA",
+            entity.id,
             entity.owner,
             entity.content,
             entity.creationDate.time,
