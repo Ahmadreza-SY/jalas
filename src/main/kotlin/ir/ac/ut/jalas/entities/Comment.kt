@@ -11,5 +11,6 @@ data class Comment(
         val owner: String,
         val meetingId: String,
         val content: String,
-        val creationDate: Date
+        val creationDate: Date,
+        val replies: List<Comment>
 )
