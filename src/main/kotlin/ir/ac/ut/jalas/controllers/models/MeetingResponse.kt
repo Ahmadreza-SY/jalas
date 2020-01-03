@@ -11,7 +11,7 @@ data class MeetingResponse(
         val roomId: Int?,
         val slots: List<TimeSlotResponse>,
         val owner: String,
-        var comments: List<CommentResponse> = emptyList()
+        var comments: List<CommentDto> = emptyList()
 ) {
     constructor(entity: Meeting) : this(
             entity.id ?: "NA",
@@ -23,7 +23,7 @@ data class MeetingResponse(
             entity.owner
     )
 
-    constructor(entity: Meeting, comments: List<CommentResponse>) : this(entity) {
+    constructor(entity: Meeting, comments: List<CommentDto>) : this(entity) {
         this.comments = comments
     }
 }
