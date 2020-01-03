@@ -12,6 +12,7 @@ import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.exceptions.*
 import ir.ac.ut.jalas.repositories.MeetingRepository
+import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
 import ir.ac.ut.jalas.utils.toReserveFormat
@@ -29,6 +30,7 @@ class MeetingService(
         val authService: AuthService,
         val mailService: MailService,
         val commentService: CommentService,
+        val userRepository: UserRepository,
         @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -116,7 +118,9 @@ class MeetingService(
 
     fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: TimeRange): String? {
         val message = try {
-            val user = authService.getLoggedInUser()
+            val user = userRepository.findByEmail(meeting.owner)
+                    ?: throw EntityNotFoundError(ErrorType.USER_NOT_FOUND)
+
             val response = reservationClient.reserveRoom(
                     roomId = selectedRoom,
                     request = ReservationRequest(
