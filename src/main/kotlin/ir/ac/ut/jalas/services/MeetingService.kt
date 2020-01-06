@@ -12,6 +12,7 @@ import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.exceptions.*
 import ir.ac.ut.jalas.repositories.MeetingRepository
+import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
 import ir.ac.ut.jalas.utils.toReserveFormat
@@ -29,6 +30,7 @@ class MeetingService(
         val authService: AuthService,
         val mailService: MailService,
         val commentService: CommentService,
+        val userRepository: UserRepository,
         @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -116,7 +118,9 @@ class MeetingService(
 
     fun reserveMeeting(meeting: Meeting, selectedRoom: Int, selectedTime: TimeRange): String? {
         val message = try {
-            val user = authService.getLoggedInUser()
+            val user = userRepository.findByEmail(meeting.owner)
+                    ?: throw EntityNotFoundError(ErrorType.USER_NOT_FOUND)
+
             val response = reservationClient.reserveRoom(
                     roomId = selectedRoom,
                     request = ReservationRequest(
@@ -233,19 +237,25 @@ class MeetingService(
         )
     }
 
-    fun addCommentToMeeting(meetingId: String, request: CommentCreationRequest): CommentResponse {
-        val meeting = meetingRepository.findByIdOrNull(meetingId)
-                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-
+    fun addCommentToMeeting(meetingId: String, request: CommentCreationRequest): CommentDto {
         val user = authService.getLoggedInUser()
-
-        if (!meeting.isParticipant(user.email))
-            throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
-
+        checkCommentAuthorization(meetingId, user)
         return commentService.createComment(meetingId, user.email, request)
     }
 
     fun getMyPolls(): List<Meeting> {
         return meetingRepository.findByOwnerAndStatus(authService.getLoggedInUser().email, MeetingStatus.ELECTING)
+    }
+
+    fun updateComment(meetingId: String, commentDto: CommentDto): CommentDto {
+        checkCommentAuthorization(meetingId, authService.getLoggedInUser())
+        return commentService.updateComment(meetingId, commentDto)
+    }
+
+    private fun checkCommentAuthorization(meetingId: String, user: User) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+        if (!meeting.isParticipant(user.email))
+            throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
     }
 }

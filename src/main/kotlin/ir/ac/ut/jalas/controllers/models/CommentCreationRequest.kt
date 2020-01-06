@@ -12,6 +12,7 @@ data class CommentCreationRequest(
             meetingId = meetingId,
             owner = owner,
             content = content,
-            creationDate = Date()
+            creationDate = Date(),
+            replies = emptyList()
     )
 }

@@ -80,4 +80,10 @@ class MeetingController(val meetingService: MeetingService) {
             @Valid @RequestBody request: CommentCreationRequest
     ) = meetingService.addCommentToMeeting(meetingId, request)
 
+    @PutMapping("/{meetingId}/comment")
+    fun updateComment(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody commentDto: CommentDto
+    ) = meetingService.updateComment(meetingId, commentDto)
+
 }
