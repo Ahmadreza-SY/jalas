@@ -258,4 +258,8 @@ class MeetingService(
         if (!meeting.isParticipant(user.email))
             throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
     }
+
+    fun deleteComment(commentId: String) {
+        commentService.deleteComment(commentId)
+    }
 }

@@ -22,6 +22,7 @@ enum class ErrorType {
     MEETING_NOT_FOUND,
     SLOT_NOT_FOUND,
     USER_NOT_FOUND,
+    COMMENT_NOT_FOUND,
 
     // 417
     USER_ALREADY_VOTED,

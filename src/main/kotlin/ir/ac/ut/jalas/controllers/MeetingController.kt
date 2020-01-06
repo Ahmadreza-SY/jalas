@@ -86,4 +86,8 @@ class MeetingController(val meetingService: MeetingService) {
             @Valid @RequestBody commentDto: CommentDto
     ) = meetingService.updateComment(meetingId, commentDto)
 
+    @DeleteMapping("/comment/{commentId}")
+    fun updateComment(
+            @PathVariable commentId: String
+    ) = meetingService.deleteComment(commentId)
 }
