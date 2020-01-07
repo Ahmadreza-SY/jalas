@@ -37,6 +37,18 @@ class MeetingController(val meetingService: MeetingService) {
             @Valid @RequestBody updateRequest: MeetingUpdateRequest
     ) = meetingService.updateMeeting(meetingId, updateRequest)
 
+    @PostMapping("/{meetingId}/guest")
+    fun addMeetingGuest(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody request: MeetingUpdateGuestRequest
+    ) = meetingService.addMeetingGuest(meetingId, request)
+
+    @DeleteMapping("/{meetingId}/guest")
+    fun deleteMeetingGuests(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody request: MeetingUpdateGuestRequest
+    ) = meetingService.deleteMeetingGuest(meetingId, request)
+
     @PutMapping("/{meetingId}/vote")
     fun voteForMeeting(
             @PathVariable meetingId: String,
