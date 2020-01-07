@@ -6,6 +6,5 @@ import javax.validation.constraints.NotNull
 
 data class MeetingSlotDeleteRequest(
         @field:NotNull
-        @field:NotEmpty
         val slot: TimeRange
 )
