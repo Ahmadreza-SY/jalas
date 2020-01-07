@@ -65,6 +65,20 @@ class MeetingService(
         return MeetingResponse(meeting, comments)
     }
 
+    fun deleteMeetingSlot(meetingId: String, deleteRequest: MeetingSlotDeleteRequest): MeetingResponse {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
+
+        val foundSlot = meeting.slots.find { it.time == deleteRequest.slot }
+                ?: throw BadRequestError(ErrorType.SLOT_NOT_FOUND)
+
+        meeting.slots.removeIf { it.time == foundSlot.time }
+        meetingRepository.save(meeting)
+
+        val comments = commentService.getComments(meetingId)
+        return MeetingResponse(meeting, comments)
+    }
+
     private fun notifyGuests(meeting: Meeting, owner: User) {
         meeting.guests.onEach { guest ->
             mailService.sendMail(

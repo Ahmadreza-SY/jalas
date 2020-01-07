@@ -37,6 +37,12 @@ class MeetingController(val meetingService: MeetingService) {
             @Valid @RequestBody updateRequest: MeetingUpdateRequest
     ) = meetingService.updateMeeting(meetingId, updateRequest)
 
+    @DeleteMapping("/{meetingId}")
+    fun deleteMeetingSlots(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody deleteRequest: MeetingSlotDeleteRequest
+    ) = meetingService.deleteMeetingSlot(meetingId, deleteRequest)
+
     @PutMapping("/{meetingId}/vote")
     fun voteForMeeting(
             @PathVariable meetingId: String,
