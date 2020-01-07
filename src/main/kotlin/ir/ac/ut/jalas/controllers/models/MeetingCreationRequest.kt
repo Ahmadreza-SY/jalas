@@ -23,6 +23,6 @@ data class MeetingCreationRequest(
             slots = slots.map { TimeSlot(agreeingUsers = mutableListOf(), disagreeingUsers = mutableListOf(), time = it) }.toMutableList(),
             owner = owner,
             status = MeetingStatus.ELECTING,
-            guests = guests.map { it.toLowerCase() }
+            guests = guests.map { it.toLowerCase() }.toMutableList()
     )
 }
