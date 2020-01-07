@@ -241,6 +241,9 @@ class MeetingService(
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
 
+        if (meeting.status != MeetingStatus.ELECTING)
+            throw PreconditionFailedError(ErrorType.INVALID_MEETING_STATUS)
+
         if (!meeting.isParticipant(request.email))
             throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
 
