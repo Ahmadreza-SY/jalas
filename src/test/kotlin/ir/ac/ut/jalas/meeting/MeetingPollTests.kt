@@ -90,7 +90,8 @@ class MeetingPollTests {
         val request = MeetingCreationRequest(
                 title = MEETING_TITLE,
                 slots = listOf(MEETING_SLOT),
-                guests = listOf(MEETING_GUEST)
+                guests = listOf(MEETING_GUEST),
+                deadline = null
         )
         return meetingService.createMeeting(request)
     }

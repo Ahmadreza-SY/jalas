@@ -47,7 +47,7 @@ class AutoPolling(
             try {
                 return op()
             } catch (e: Exception) {
-                logger.info("failed to get result... retrying in 1000ms")
+                logger.info("failed to get result, retrying in 1000ms", e)
                 Thread.sleep(1000)
             }
         }
