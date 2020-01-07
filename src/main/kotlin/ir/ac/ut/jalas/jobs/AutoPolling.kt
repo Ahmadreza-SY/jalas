@@ -29,7 +29,7 @@ class AutoPolling(
 
                 logger.info("canceling meeting[id: ${meeting.id}] with no slots")
             } else {
-                meeting.slots.sortBy { it.agreeingUsers.size }
+                meeting.slots.sortByDescending { it.agreeingUsers.size }
                 val bestSlot = meeting.slots.first()
                 val selectedRoom = tryUntilSuccess {
                     meetingService.getAvailableRooms(bestSlot.time)
