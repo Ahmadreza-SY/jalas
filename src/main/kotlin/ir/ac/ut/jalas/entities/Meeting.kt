@@ -5,6 +5,7 @@ import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.entities.nested.TimeSlot
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.util.*
 
 @Document(collection = "meeting")
 data class Meeting(
@@ -17,7 +18,8 @@ data class Meeting(
         var roomId: Int? = null,
         val owner: String,
         var reservationTime: TimeRange? = null,
-        val guests: MutableList<String> = mutableListOf()
+        val guests: MutableList<String> = mutableListOf(),
+        val deadline: Date? = null
 ) {
     fun isParticipant(userEmail: String): Boolean =
             guests.contains(userEmail.toLowerCase()) || owner == userEmail.toLowerCase()

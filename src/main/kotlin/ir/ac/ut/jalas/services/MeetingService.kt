@@ -314,4 +314,16 @@ class MeetingService(
     fun deleteComment(commentId: String) {
         commentService.deleteComment(commentId)
     }
+
+    fun closeMeetingPoll(meetingId: String) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
+
+        val user = authService.getLoggedInUser()
+        if (meeting.owner != user.email)
+            throw AccessDeniedError(ErrorType.NOT_MEETING_OWNER)
+
+        meeting.status = MeetingStatus.CLOSED
+        meetingRepository.save(meeting)
+    }
 }

@@ -86,6 +86,10 @@ class MeetingController(val meetingService: MeetingService) {
     fun cancelMeetingReservation(@PathVariable meetingId: String) =
             meetingService.cancelMeetingReservation(meetingId)
 
+    @PatchMapping("/{meetingId}/poll/close")
+    fun closeMeetingPoll(@PathVariable meetingId: String) =
+            meetingService.closeMeetingPoll(meetingId)
+
     @PostMapping("/{meetingId}/comment")
     fun addCommentToMeeting(
             @PathVariable meetingId: String,

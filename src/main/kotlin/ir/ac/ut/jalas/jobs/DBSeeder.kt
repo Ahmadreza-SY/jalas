@@ -72,7 +72,8 @@ class DBSeeder(
         return MeetingCreationRequest(
                 title = "Meeting $index",
                 slots = (0..5).map { makeRandomTimeSlot() },
-                guests = emptyList()
+                guests = emptyList(),
+                deadline = null
         )
     }
 
