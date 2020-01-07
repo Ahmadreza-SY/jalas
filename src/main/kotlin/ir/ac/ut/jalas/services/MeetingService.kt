@@ -58,7 +58,7 @@ class MeetingService(
         if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
             throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
 
-        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) }
+        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), mutableListOf(), it) }
         meetingRepository.save(meeting)
 
         val comments = commentService.getComments(meetingId)
@@ -79,11 +79,48 @@ class MeetingService(
         return MeetingResponse(meeting, comments)
     }
 
+    fun addMeetingGuest(meetingId: String, request: MeetingUpdateGuestRequest) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
+
+        if (meeting.isParticipant(request.guest))
+            throw PreconditionFailedError(ErrorType.USER_ALREADY_INVITED)
+
+        val owner = userRepository.findByEmail(meeting.owner)
+                ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
+
+        meeting.guests += request.guest
+        meetingRepository.save(meeting)
+
+        notifyGuest(meeting, owner, request.guest)
+    }
+
+    fun deleteMeetingGuest(meetingId: String, request: MeetingUpdateGuestRequest) {
+        val meeting = meetingRepository.findByIdOrNull(meetingId)
+                ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
+
+        if (!meeting.isParticipant(request.guest))
+            throw PreconditionFailedError(ErrorType.NOT_MEETING_GUEST)
+
+        val owner = userRepository.findByEmail(meeting.owner)
+                ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
+
+        meeting.guests -= request.guest
+        meetingRepository.save(meeting)
+
+        notifyGuestRemoval(meeting, owner, request.guest)
+    }
+
     private fun notifyGuests(meeting: Meeting, owner: User) {
         meeting.guests.onEach { guest ->
-            mailService.sendMail(
-                    subject = "Meeting ${meeting.title} Invitation",
-                    message = """
+            notifyGuest(meeting, owner, guest)
+        }
+    }
+
+    private fun notifyGuest(meeting: Meeting, owner: User, guest: String) {
+        mailService.sendMail(
+                subject = "Meeting ${meeting.title} Invitation",
+                message = """
                             |Dear Guest,
                             |
                             |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
@@ -93,9 +130,24 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                    to = guest
-            )
-        }
+                to = guest
+        )
+    }
+
+    private fun notifyGuestRemoval(meeting: Meeting, owner: User, guest: String) {
+        mailService.sendMail(
+                subject = "Meeting ${meeting.title} Removal",
+                message = """
+                            |Dear Guest,
+                            |
+                            |You have removed from '${meeting.title}' meeting created by ${owner.fullName()}.
+                            |We hope seeing you in other meetings
+                            |
+                            |Best Regards,
+                            |Jalas Team
+                        """.trimMargin(),
+                to = guest
+        )
     }
 
     fun getMeeting(meetingId: String): MeetingResponse {
@@ -215,17 +267,27 @@ class MeetingService(
                     throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
                 slot.agreeingUsers += request.email
                 slot.disagreeingUsers -= request.email
+                slot.agreeIfNeededUsers -= request.email
             }
             VoteOption.DISAGREE -> {
                 if (slot.disagreeingUsers.contains(request.email))
                     throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
                 slot.disagreeingUsers += request.email
                 slot.agreeingUsers -= request.email
+                slot.agreeIfNeededUsers -= request.email
+            }
+            VoteOption.AGREE_IF_NEEDED -> {
+                if (slot.agreeIfNeededUsers.contains(request.email))
+                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+                slot.agreeIfNeededUsers += request.email
+                slot.agreeingUsers -= request.email
+                slot.disagreeingUsers -= request.email
             }
             VoteOption.REVOKE -> {
                 when {
                     slot.agreeingUsers.contains(request.email) -> slot.agreeingUsers -= request.email
                     slot.disagreeingUsers.contains(request.email) -> slot.disagreeingUsers -= request.email
+                    slot.agreeIfNeededUsers.contains(request.email) -> slot.agreeIfNeededUsers -= request.email
                     else -> throw PreconditionFailedError(ErrorType.USER_NOT_VOTED)
                 }
             }

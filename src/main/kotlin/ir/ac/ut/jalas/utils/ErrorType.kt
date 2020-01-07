@@ -26,6 +26,7 @@ enum class ErrorType {
 
     // 417
     USER_ALREADY_VOTED,
+    USER_ALREADY_INVITED,
     USER_NOT_VOTED,
 
     // 500

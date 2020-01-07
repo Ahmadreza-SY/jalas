@@ -10,6 +10,7 @@ data class MeetingResponse(
         val time: TimeRangeResponse?,
         val roomId: Int?,
         val slots: List<TimeSlotResponse>,
+        val guests: List<String>,
         val owner: String,
         var comments: List<CommentDto> = emptyList()
 ) {
@@ -20,6 +21,7 @@ data class MeetingResponse(
             entity.time?.let { TimeRangeResponse(it) },
             entity.roomId,
             entity.slots.map { TimeSlotResponse(it) },
+            entity.guests,
             entity.owner
     )
 

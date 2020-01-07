@@ -17,7 +17,7 @@ data class Meeting(
         var roomId: Int? = null,
         val owner: String,
         var reservationTime: TimeRange? = null,
-        val guests: List<String> = emptyList()
+        val guests: MutableList<String> = mutableListOf()
 ) {
     fun isParticipant(userEmail: String): Boolean =
             guests.contains(userEmail.toLowerCase()) || owner == userEmail.toLowerCase()
