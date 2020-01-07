@@ -58,7 +58,7 @@ class MeetingService(
         if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
             throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
 
-        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), it) }
+        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), mutableListOf(), it) }
         meetingRepository.save(meeting)
 
         val comments = commentService.getComments(meetingId)
@@ -253,17 +253,27 @@ class MeetingService(
                     throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
                 slot.agreeingUsers += request.email
                 slot.disagreeingUsers -= request.email
+                slot.agreeIfNeededUsers -= request.email
             }
             VoteOption.DISAGREE -> {
                 if (slot.disagreeingUsers.contains(request.email))
                     throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
                 slot.disagreeingUsers += request.email
                 slot.agreeingUsers -= request.email
+                slot.agreeIfNeededUsers -= request.email
+            }
+            VoteOption.AGREE_IF_NEEDED -> {
+                if (slot.agreeIfNeededUsers.contains(request.email))
+                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
+                slot.agreeIfNeededUsers += request.email
+                slot.agreeingUsers -= request.email
+                slot.disagreeingUsers -= request.email
             }
             VoteOption.REVOKE -> {
                 when {
                     slot.agreeingUsers.contains(request.email) -> slot.agreeingUsers -= request.email
                     slot.disagreeingUsers.contains(request.email) -> slot.disagreeingUsers -= request.email
+                    slot.agreeIfNeededUsers.contains(request.email) -> slot.agreeIfNeededUsers -= request.email
                     else -> throw PreconditionFailedError(ErrorType.USER_NOT_VOTED)
                 }
             }
