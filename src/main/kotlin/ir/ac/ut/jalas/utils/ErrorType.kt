@@ -17,6 +17,7 @@ enum class ErrorType {
     // 403
     NOT_MEETING_GUEST,
     NOT_ADMIN_USER,
+    NOT_MEETING_OWNER,
 
     // 404
     MEETING_NOT_FOUND,
@@ -28,6 +29,7 @@ enum class ErrorType {
     USER_ALREADY_VOTED,
     USER_ALREADY_INVITED,
     USER_NOT_VOTED,
+    INVALID_MEETING_STATUS,
 
     // 500
     INTERNAL_SERVER_ERROR

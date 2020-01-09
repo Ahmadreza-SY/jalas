@@ -4,5 +4,6 @@ enum class MeetingStatus {
     ELECTING,
     PENDING,
     RESERVED,
-    CANCELED
+    CANCELED,
+    CLOSED
 }
