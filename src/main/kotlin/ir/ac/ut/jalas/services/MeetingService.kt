@@ -4,6 +4,8 @@ import feign.FeignException
 import ir.ac.ut.jalas.clients.ReservationClient
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.clients.models.ReservationRequest
+import ir.ac.ut.jalas.controllers.models.MeetingSlotDeleteRequest
+import ir.ac.ut.jalas.controllers.models.MeetingSlotsUpdateRequest
 import ir.ac.ut.jalas.controllers.models.comment.CommentCreationRequest
 import ir.ac.ut.jalas.controllers.models.comment.CommentDto
 import ir.ac.ut.jalas.controllers.models.meetings.*
