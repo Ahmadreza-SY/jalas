@@ -1,0 +1,8 @@
+Dear {{participantName}},
+
+Your meeting '{{meetingTitle}}' at time [{{meetingStartTime}}, {{meetingEndTime}}] has been successfully reserved at room {{meetingRoomId}}.
+To view more info about the meeting, click on link bellow:
+{{landingUrl}}
+
+Best Regards,
+Jalas Team

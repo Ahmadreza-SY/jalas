@@ -12,7 +12,6 @@ import ir.ac.ut.jalas.controllers.models.meetings.*
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
-import ir.ac.ut.jalas.entities.nested.NotificationType
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.AccessDeniedError
 import ir.ac.ut.jalas.exceptions.BadRequestError
@@ -24,7 +23,6 @@ import ir.ac.ut.jalas.utils.ErrorType
 import ir.ac.ut.jalas.utils.extractErrorMessage
 import ir.ac.ut.jalas.utils.toReserveFormat
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -35,10 +33,9 @@ class MeetingService(
         val meetingRepository: MeetingRepository,
         val reservationClient: ReservationClient,
         val authService: AuthService,
-        val mailService: MailService,
         val commentService: CommentService,
         val userRepository: UserRepository,
-        @Value("\${jalas.dashboard.url}") val dashboardUrl: String
+        val notificationService: NotificationService
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -52,7 +49,7 @@ class MeetingService(
         val owner = authService.getLoggedInUser()
         val entity = request.extract(owner.email)
         meetingRepository.save(entity)
-        notifyGuests(entity, owner)
+        notificationService.notifyGuests(entity, owner)
         return MeetingResponse(entity)
     }
 
@@ -81,7 +78,7 @@ class MeetingService(
                 ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
         meeting.addGuest(request)
         meetingRepository.save(meeting)
-        notifyGuest(meeting, owner, request.guest)
+        notificationService.notifyGuest(meeting, owner, request.guest)
     }
 
     fun deleteMeetingGuest(meetingId: String, request: MeetingUpdateGuestRequest) {
@@ -91,48 +88,7 @@ class MeetingService(
                 ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
         meeting.deleteGuest(request)
         meetingRepository.save(meeting)
-        notifyGuestRemoval(meeting, owner, request.guest)
-    }
-
-    private fun notifyGuests(meeting: Meeting, owner: User) {
-        meeting.guests.onEach { guest ->
-            notifyGuest(meeting, owner, guest)
-        }
-    }
-
-    private fun notifyGuest(meeting: Meeting, owner: User, guest: String) {
-        mailService.sendMail(
-                subject = "Meeting ${meeting.title} Invitation",
-                message = """
-                            |Dear Guest,
-                            |
-                            |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
-                            |Please visit the following link to vote your available time:
-                            |$dashboardUrl/meeting/${meeting.id}/vote/$guest
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
-                to = guest,
-                type = NotificationType.MEETING_INVITATION
-        )
-    }
-
-    private fun notifyGuestRemoval(meeting: Meeting, owner: User, guest: String) {
-        mailService.sendMail(
-                subject = "Meeting ${meeting.title} Removal",
-                message = """
-                            |Dear Guest,
-                            |
-                            |You have removed from '${meeting.title}' meeting created by ${owner.fullName()}.
-                            |We hope seeing you in other meetings
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
-                to = guest,
-                type = NotificationType.MEETING_REMOVE_GUEST
-        )
+        notificationService.notifyGuestRemoval(meeting, owner, request.guest)
     }
 
     fun getMeeting(meetingId: String): MeetingResponse {
@@ -181,7 +137,7 @@ class MeetingService(
                     )
             )
             meeting.reserve(selectedTime, selectedRoom)
-            notifySuccessReservation(user, meeting)
+            notificationService.notifySuccessReservation(user, meeting)
             response.message
         } catch (e: FeignException) {
             if (e.status() == HttpStatus.BAD_REQUEST.value()) {
@@ -193,27 +149,6 @@ class MeetingService(
         }
         meetingRepository.save(meeting)
         return message
-    }
-
-    private fun notifySuccessReservation(user: User, meeting: Meeting) {
-        (meeting.guests + meeting.owner).forEach { participant ->
-            val participantName = if (participant == meeting.owner) user.firstName else "Participant"
-            mailService.sendMail(
-                    subject = "Meeting Reservation Success",
-                    message = """
-                            |Dear $participantName,
-                            |
-                            |Your meeting '${meeting.title}' at time [${meeting.time?.start}, ${meeting.time?.end}] has been successfully reserved at room ${meeting.roomId}.
-                            |To view more info about the meeting, click on link bellow:
-                            |$dashboardUrl/meeting/${meeting.id}
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
-                    to = participant,
-                    type = NotificationType.MEETING_RESERVATION
-            )
-        }
     }
 
     fun cancelMeetingReservation(meetingId: String) {
@@ -228,25 +163,7 @@ class MeetingService(
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
         meeting.addVote(request)
         meetingRepository.save(meeting)
-        sendNewVoteNotification(request, meeting)
-    }
-
-    private fun sendNewVoteNotification(request: VoteRequest, meeting: Meeting) {
-        mailService.sendMail(
-                subject = "New Vote for Meeting: ${meeting.title}",
-                message = """
-                            |Dear user,
-                            |
-                            |User with email: ${request.email} has voted for ${request.vote.name} for time slot ${request.slot.start.toReserveFormat()}-${request.slot.end.toReserveFormat()}
-                            |To view more info about the meeting, click on link bellow:
-                            |$dashboardUrl/meeting/${meeting.id}
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
-                to = meeting.owner,
-                type = NotificationType.MEETING_VOTE
-        )
+        notificationService.sendNewVoteNotification(request, meeting)
     }
 
     fun addCommentToMeeting(meetingId: String, request: CommentCreationRequest): CommentDto {
