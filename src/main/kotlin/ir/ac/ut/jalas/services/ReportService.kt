@@ -1,6 +1,6 @@
 package ir.ac.ut.jalas.services
 
-import ir.ac.ut.jalas.controllers.models.GeneralReportResponse
+import ir.ac.ut.jalas.controllers.models.reports.GeneralReportResponse
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.exceptions.AccessDeniedError
 import ir.ac.ut.jalas.repositories.MeetingRepository

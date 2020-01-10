@@ -2,9 +2,11 @@ package ir.ac.ut.jalas.controllers
 
 import ir.ac.ut.jalas.auth.JwtTokenUtil
 import ir.ac.ut.jalas.auth.JwtUserDetailsService
-import ir.ac.ut.jalas.controllers.models.JwtRequest
-import ir.ac.ut.jalas.controllers.models.JwtResponse
-import ir.ac.ut.jalas.controllers.models.UserResponse
+import ir.ac.ut.jalas.controllers.models.users.JwtRequest
+import ir.ac.ut.jalas.controllers.models.users.JwtResponse
+import ir.ac.ut.jalas.controllers.models.users.NotificationUpdateRequest
+import ir.ac.ut.jalas.controllers.models.users.UserResponse
+import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.services.AuthService
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.http.ResponseEntity
@@ -22,7 +24,8 @@ class AuthController(
         val authenticationManager: AuthenticationManager,
         val jwtTokenUtil: JwtTokenUtil,
         val userDetailsService: JwtUserDetailsService,
-        val authService: AuthService
+        val authService: AuthService,
+        val userRepository: UserRepository
 ) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody authenticationRequest: JwtRequest): ResponseEntity<*> {
@@ -34,6 +37,13 @@ class AuthController(
 
     @GetMapping("/profile")
     fun getProfile() = UserResponse(authService.getLoggedInUser(), authService.isAdmin())
+
+    @PatchMapping("/profile/notification")
+    fun updateNotificationTypes(@RequestBody request: NotificationUpdateRequest) {
+        val user = authService.getLoggedInUser()
+        user.notificationTypes = request.types
+        userRepository.save(user)
+    }
 
     private fun authenticate(username: String, password: String) {
         try {
