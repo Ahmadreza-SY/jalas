@@ -48,7 +48,6 @@ data class Meeting(
     fun deleteSlot(deleteRequest: MeetingSlotDeleteRequest) {
         val foundSlot = slots.find { it.time == deleteRequest.slot }
                 ?: throw BadRequestError(ErrorType.SLOT_NOT_FOUND)
-
         slots.removeIf { it.time == foundSlot.time }
     }
 
@@ -78,37 +77,7 @@ data class Meeting(
         val slot = slots.firstOrNull { it.time == request.slot }
                 ?: throw EntityNotFoundError(ErrorType.SLOT_NOT_FOUND)
 
-        when (request.vote) {
-            VoteOption.AGREE -> {
-                if (slot.agreeingUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.agreeingUsers += request.email
-                slot.disagreeingUsers -= request.email
-                slot.agreeIfNeededUsers -= request.email
-            }
-            VoteOption.DISAGREE -> {
-                if (slot.disagreeingUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.disagreeingUsers += request.email
-                slot.agreeingUsers -= request.email
-                slot.agreeIfNeededUsers -= request.email
-            }
-            VoteOption.AGREE_IF_NEEDED -> {
-                if (slot.agreeIfNeededUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.agreeIfNeededUsers += request.email
-                slot.agreeingUsers -= request.email
-                slot.disagreeingUsers -= request.email
-            }
-            VoteOption.REVOKE -> {
-                when {
-                    slot.agreeingUsers.contains(request.email) -> slot.agreeingUsers -= request.email
-                    slot.disagreeingUsers.contains(request.email) -> slot.disagreeingUsers -= request.email
-                    slot.agreeIfNeededUsers.contains(request.email) -> slot.agreeIfNeededUsers -= request.email
-                    else -> throw PreconditionFailedError(ErrorType.USER_NOT_VOTED)
-                }
-            }
-        }
+        slot.addVote(request.vote, request.email)
     }
 
     fun closePoll(user: User) {
