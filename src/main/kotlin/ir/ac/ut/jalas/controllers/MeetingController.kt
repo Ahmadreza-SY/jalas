@@ -1,7 +1,9 @@
 package ir.ac.ut.jalas.controllers
 
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
-import ir.ac.ut.jalas.controllers.models.*
+import ir.ac.ut.jalas.controllers.models.comment.CommentCreationRequest
+import ir.ac.ut.jalas.controllers.models.comment.CommentDto
+import ir.ac.ut.jalas.controllers.models.meetings.*
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
 import ir.ac.ut.jalas.services.MeetingService

@@ -1,4 +1,4 @@
-package ir.ac.ut.jalas.controllers.models
+package ir.ac.ut.jalas.controllers.models.meetings
 
 import ir.ac.ut.jalas.entities.nested.TimeRange
 

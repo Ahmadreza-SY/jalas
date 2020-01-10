@@ -1,4 +1,4 @@
-package ir.ac.ut.jalas.controllers.models
+package ir.ac.ut.jalas.controllers.models.meetings
 
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank

@@ -1,4 +1,4 @@
-package ir.ac.ut.jalas.controllers.models;
+package ir.ac.ut.jalas.controllers.models.users;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;

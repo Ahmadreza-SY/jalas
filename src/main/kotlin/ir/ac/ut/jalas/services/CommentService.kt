@@ -1,7 +1,7 @@
 package ir.ac.ut.jalas.services
 
-import ir.ac.ut.jalas.controllers.models.CommentCreationRequest
-import ir.ac.ut.jalas.controllers.models.CommentDto
+import ir.ac.ut.jalas.controllers.models.comment.CommentCreationRequest
+import ir.ac.ut.jalas.controllers.models.comment.CommentDto
 import ir.ac.ut.jalas.exceptions.EntityNotFoundError
 import ir.ac.ut.jalas.repositories.CommentRepository
 import ir.ac.ut.jalas.utils.ErrorType

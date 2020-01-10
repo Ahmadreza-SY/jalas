@@ -1,4 +1,4 @@
-package ir.ac.ut.jalas.controllers.models
+package ir.ac.ut.jalas.controllers.models.meetings
 
 enum class VoteOption {
     AGREE,

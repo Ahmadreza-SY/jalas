@@ -1,7 +1,8 @@
 package ir.ac.ut.jalas.jobs
 
-import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
+import ir.ac.ut.jalas.controllers.models.meetings.MeetingCreationRequest
 import ir.ac.ut.jalas.entities.User
+import ir.ac.ut.jalas.entities.nested.NotificationType
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.services.MeetingService
@@ -26,7 +27,7 @@ class DBSeeder(
 ) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
-    private val users = listOf(
+    private val userEmails = listOf(
             "mohammad.76kiani@gmail.com",
             "mohammad_76kiani@yahoo.com",
             "ahmadreza.saboor2012@gmail.com",
@@ -35,18 +36,48 @@ class DBSeeder(
     )
 
     private fun createUsers() {
-        users.forEach { email ->
-            val user = User(
-                    firstName = "first",
-                    lastName = "Last",
-                    email = email,
-                    password = passwordEncoder.encode("password")
-            )
-            try {
-                userRepository.save(user)
-            } catch (e: Exception) {
-            }
-        }
+        val password = passwordEncoder.encode("password")
+        val allNotifications = NotificationType.values().toList()
+        val users = listOf(
+                User(
+                        email = userEmails[0],
+                        firstName = "Admin",
+                        lastName = "",
+                        password = password,
+                        notificationTypes = allNotifications
+                ),
+                User(
+                        email = userEmails[1],
+                        firstName = "MohammadReza",
+                        lastName = "Kiani",
+                        password = password,
+                        notificationTypes = allNotifications
+                ),
+                User(
+                        email = userEmails[2],
+                        firstName = "Ahmadreza",
+                        lastName = "Saboor",
+                        password = password,
+                        notificationTypes = allNotifications
+                ),
+                User(
+                        email = userEmails[3],
+                        firstName = "Shahryar",
+                        lastName = "Soltanpour",
+                        password = password,
+                        notificationTypes = allNotifications
+                ),
+                User(
+                        email = "ramtung@gmail.com",
+                        firstName = "Ramtin",
+                        lastName = "Khosravi",
+                        password = password,
+                        notificationTypes = allNotifications
+                )
+        )
+        userRepository.deleteAll()
+        userRepository.saveAll(users)
+        logger.info("created sample users")
     }
 
     private fun createMeetings() {
@@ -63,7 +94,7 @@ class DBSeeder(
     }
 
     override fun run(vararg args: String?) {
-//        createUsers()
+        createUsers()
 //        login()
 //        createMeetings()
     }
@@ -90,8 +121,8 @@ class DBSeeder(
     }
 
     private fun getRandomEmails(): List<String> {
-        val votes = Random.nextInt(from = 1, until = users.size)
-        return users.shuffled().take(votes)
+        val votes = Random.nextInt(from = 1, until = userEmails.size)
+        return userEmails.shuffled().take(votes)
     }
 
 }

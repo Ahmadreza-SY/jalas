@@ -1,5 +1,6 @@
-package ir.ac.ut.jalas.controllers.models
+package ir.ac.ut.jalas.controllers.models.meetings
 
+import ir.ac.ut.jalas.controllers.models.meetings.VoteOption
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
