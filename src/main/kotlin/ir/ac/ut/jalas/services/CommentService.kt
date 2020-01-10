@@ -8,7 +8,11 @@ import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.stereotype.Service
 
 @Service
-class CommentService(val commentRepository: CommentRepository) {
+class CommentService(
+        val commentRepository: CommentRepository,
+        val meetingService: MeetingService,
+        val authService: AuthService
+) {
 
     fun createComment(meetingId: String, owner: String, request: CommentCreationRequest): CommentDto {
         val comment = request.extract(meetingId, owner)
@@ -17,6 +21,7 @@ class CommentService(val commentRepository: CommentRepository) {
     }
 
     fun updateComment(meetingId: String, commentDto: CommentDto): CommentDto {
+        meetingService.checkCommentAuthorization(meetingId, authService.getLoggedInUser())
         val comment = commentDto.extract(meetingId)
         commentRepository.save(comment)
         return CommentDto(comment)

@@ -4,6 +4,8 @@ import feign.FeignException
 import ir.ac.ut.jalas.clients.ReservationClient
 import ir.ac.ut.jalas.clients.models.AvailableRoomsResponse
 import ir.ac.ut.jalas.clients.models.ReservationRequest
+import ir.ac.ut.jalas.controllers.models.MeetingSlotDeleteRequest
+import ir.ac.ut.jalas.controllers.models.MeetingSlotsUpdateRequest
 import ir.ac.ut.jalas.controllers.models.comment.CommentCreationRequest
 import ir.ac.ut.jalas.controllers.models.comment.CommentDto
 import ir.ac.ut.jalas.controllers.models.meetings.*
@@ -12,8 +14,10 @@ import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
 import ir.ac.ut.jalas.entities.nested.NotificationType
 import ir.ac.ut.jalas.entities.nested.TimeRange
-import ir.ac.ut.jalas.entities.nested.TimeSlot
-import ir.ac.ut.jalas.exceptions.*
+import ir.ac.ut.jalas.exceptions.AccessDeniedError
+import ir.ac.ut.jalas.exceptions.BadRequestError
+import ir.ac.ut.jalas.exceptions.EntityNotFoundError
+import ir.ac.ut.jalas.exceptions.InternalServerError
 import ir.ac.ut.jalas.repositories.MeetingRepository
 import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.utils.ErrorType
@@ -55,17 +59,8 @@ class MeetingService(
     fun updateMeetingSlots(meetingId: String, slotsUpdateRequest: MeetingSlotsUpdateRequest): MeetingResponse {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
-
-        val newSlots = slotsUpdateRequest.newSlots
-        val oldSlots = meeting.slots.map { it.time }
-        if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
-            throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
-
-        meeting.slots += slotsUpdateRequest
-                .newSlots
-                .map { TimeSlot(mutableListOf(), mutableListOf(), mutableListOf(), it) }
+        meeting.updateSlots(slotsUpdateRequest)
         meetingRepository.save(meeting)
-
         val comments = commentService.getComments(meetingId)
         return MeetingResponse(meeting, comments)
     }
@@ -73,13 +68,8 @@ class MeetingService(
     fun deleteMeetingSlot(meetingId: String, deleteRequest: MeetingSlotDeleteRequest): MeetingResponse {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
-
-        val foundSlot = meeting.slots.find { it.time == deleteRequest.slot }
-                ?: throw BadRequestError(ErrorType.SLOT_NOT_FOUND)
-
-        meeting.slots.removeIf { it.time == foundSlot.time }
+        meeting.deleteSlot(deleteRequest)
         meetingRepository.save(meeting)
-
         val comments = commentService.getComments(meetingId)
         return MeetingResponse(meeting, comments)
     }
@@ -87,32 +77,20 @@ class MeetingService(
     fun addMeetingGuest(meetingId: String, request: MeetingUpdateGuestRequest) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
-
-        if (meeting.isParticipant(request.guest))
-            throw PreconditionFailedError(ErrorType.USER_ALREADY_INVITED)
-
         val owner = userRepository.findByEmail(meeting.owner)
                 ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
-
-        meeting.guests += request.guest
+        meeting.addGuest(request)
         meetingRepository.save(meeting)
-
         notifyGuest(meeting, owner, request.guest)
     }
 
     fun deleteMeetingGuest(meetingId: String, request: MeetingUpdateGuestRequest) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
-
-        if (!meeting.isParticipant(request.guest))
-            throw PreconditionFailedError(ErrorType.NOT_MEETING_GUEST)
-
         val owner = userRepository.findByEmail(meeting.owner)
                 ?: throw BadRequestError(ErrorType.USER_NOT_FOUND)
-
-        meeting.guests -= request.guest
+        meeting.deleteGuest(request)
         meetingRepository.save(meeting)
-
         notifyGuestRemoval(meeting, owner, request.guest)
     }
 
@@ -202,32 +180,18 @@ class MeetingService(
                             end = selectedTime.end.toReserveFormat()
                     )
             )
-
-            meeting.status = MeetingStatus.RESERVED
-            meeting.time = selectedTime
-            meeting.roomId = selectedRoom
-            meeting.reservationTime = meeting.reservationTime?.copy(end = Date())
-
+            meeting.reserve(selectedTime, selectedRoom)
             notifySuccessReservation(user, meeting)
-
             response.message
         } catch (e: FeignException) {
             if (e.status() == HttpStatus.BAD_REQUEST.value()) {
-                meeting.status = MeetingStatus.ELECTING
-                meeting.time = null
-                meeting.roomId = null
-                meeting.reservationTime = null
+                meeting.toElecting()
             } else {
-                meeting.status = MeetingStatus.PENDING
-                meeting.time = selectedTime
-                meeting.roomId = selectedRoom
+                meeting.toPending(selectedTime, selectedRoom)
             }
-
             e.extractErrorMessage()
         }
-
         meetingRepository.save(meeting)
-
         return message
     }
 
@@ -255,56 +219,16 @@ class MeetingService(
     fun cancelMeetingReservation(meetingId: String) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-        meeting.status = MeetingStatus.CANCELED
+        meeting.cancel()
         meetingRepository.save(meeting)
     }
 
     fun voteForMeeting(meetingId: String, request: VoteRequest) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-
-        if (meeting.status != MeetingStatus.ELECTING)
-            throw PreconditionFailedError(ErrorType.INVALID_MEETING_STATUS)
-
-        if (!meeting.isParticipant(request.email))
-            throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
-
-        val slot = meeting.slots.firstOrNull { it.time == request.slot }
-                ?: throw EntityNotFoundError(ErrorType.SLOT_NOT_FOUND)
-
-        when (request.vote) {
-            VoteOption.AGREE -> {
-                if (slot.agreeingUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.agreeingUsers += request.email
-                slot.disagreeingUsers -= request.email
-                slot.agreeIfNeededUsers -= request.email
-            }
-            VoteOption.DISAGREE -> {
-                if (slot.disagreeingUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.disagreeingUsers += request.email
-                slot.agreeingUsers -= request.email
-                slot.agreeIfNeededUsers -= request.email
-            }
-            VoteOption.AGREE_IF_NEEDED -> {
-                if (slot.agreeIfNeededUsers.contains(request.email))
-                    throw PreconditionFailedError(ErrorType.USER_ALREADY_VOTED)
-                slot.agreeIfNeededUsers += request.email
-                slot.agreeingUsers -= request.email
-                slot.disagreeingUsers -= request.email
-            }
-            VoteOption.REVOKE -> {
-                when {
-                    slot.agreeingUsers.contains(request.email) -> slot.agreeingUsers -= request.email
-                    slot.disagreeingUsers.contains(request.email) -> slot.disagreeingUsers -= request.email
-                    slot.agreeIfNeededUsers.contains(request.email) -> slot.agreeIfNeededUsers -= request.email
-                    else -> throw PreconditionFailedError(ErrorType.USER_NOT_VOTED)
-                }
-            }
-        }
-        sendNewVoteNotification(request, meeting)
+        meeting.addVote(request)
         meetingRepository.save(meeting)
+        sendNewVoteNotification(request, meeting)
     }
 
     private fun sendNewVoteNotification(request: VoteRequest, meeting: Meeting) {
@@ -335,31 +259,17 @@ class MeetingService(
         return meetingRepository.findByOwnerAndStatus(authService.getLoggedInUser().email, MeetingStatus.ELECTING)
     }
 
-    fun updateComment(meetingId: String, commentDto: CommentDto): CommentDto {
-        checkCommentAuthorization(meetingId, authService.getLoggedInUser())
-        return commentService.updateComment(meetingId, commentDto)
-    }
-
-    private fun checkCommentAuthorization(meetingId: String, user: User) {
+    fun checkCommentAuthorization(meetingId: String, user: User) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
         if (!meeting.isParticipant(user.email))
             throw AccessDeniedError(ErrorType.NOT_MEETING_GUEST)
     }
 
-    fun deleteComment(commentId: String) {
-        commentService.deleteComment(commentId)
-    }
-
     fun closeMeetingPoll(meetingId: String) {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw EntityNotFoundError(ErrorType.MEETING_NOT_FOUND)
-
-        val user = authService.getLoggedInUser()
-        if (meeting.owner != user.email)
-            throw AccessDeniedError(ErrorType.NOT_MEETING_OWNER)
-
-        meeting.status = MeetingStatus.CLOSED
+        meeting.closePoll(authService.getLoggedInUser())
         meetingRepository.save(meeting)
     }
 }
