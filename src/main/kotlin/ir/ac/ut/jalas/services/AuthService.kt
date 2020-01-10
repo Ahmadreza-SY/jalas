@@ -1,5 +1,6 @@
 package ir.ac.ut.jalas.services
 
+import ir.ac.ut.jalas.controllers.models.users.NotificationUpdateRequest
 import ir.ac.ut.jalas.exceptions.EntityNotFoundError
 import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.utils.ErrorType
@@ -21,4 +22,10 @@ class AuthService(val userRepository: UserRepository) {
             ?: throw EntityNotFoundError(ErrorType.USER_NOT_FOUND)
 
     fun isAdmin(): Boolean = getLoggedInUsername() in ADMIN_EMAILS
+
+    fun updateNotificationTypes(request: NotificationUpdateRequest) {
+        val user = getLoggedInUser()
+        user.notificationTypes = request.types
+        userRepository.save(user)
+    }
 }

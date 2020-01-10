@@ -6,7 +6,6 @@ import ir.ac.ut.jalas.controllers.models.users.JwtRequest
 import ir.ac.ut.jalas.controllers.models.users.JwtResponse
 import ir.ac.ut.jalas.controllers.models.users.NotificationUpdateRequest
 import ir.ac.ut.jalas.controllers.models.users.UserResponse
-import ir.ac.ut.jalas.repositories.UserRepository
 import ir.ac.ut.jalas.services.AuthService
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.http.ResponseEntity
@@ -24,8 +23,7 @@ class AuthController(
         val authenticationManager: AuthenticationManager,
         val jwtTokenUtil: JwtTokenUtil,
         val userDetailsService: JwtUserDetailsService,
-        val authService: AuthService,
-        val userRepository: UserRepository
+        val authService: AuthService
 ) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody authenticationRequest: JwtRequest): ResponseEntity<*> {
@@ -39,11 +37,8 @@ class AuthController(
     fun getProfile() = UserResponse(authService.getLoggedInUser(), authService.isAdmin())
 
     @PatchMapping("/profile/notification")
-    fun updateNotificationTypes(@RequestBody request: NotificationUpdateRequest) {
-        val user = authService.getLoggedInUser()
-        user.notificationTypes = request.types
-        userRepository.save(user)
-    }
+    fun updateNotificationTypes(@Valid @RequestBody request: NotificationUpdateRequest) =
+            authService.updateNotificationTypes(request)
 
     private fun authenticate(username: String, password: String) {
         try {
