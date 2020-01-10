@@ -37,18 +37,17 @@ class NotificationService(
     }
 
     fun sendNewVoteNotification(request: VoteRequest, meeting: Meeting) {
+        val renderMap = mapOf(
+                "voterEmail" to request.email,
+                "voteName" to request.vote.name,
+                "slotStart" to request.slot.start.toReserveFormat(),
+                "slotEnd" to request.slot.end.toReserveFormat(),
+                "landingUrl" to "$dashboardUrl/meeting/${meeting.id}"
+        )
+        val message = TemplateEngine.render("new-vote", renderMap)
         mailService.sendMail(
                 subject = "New Vote for Meeting: ${meeting.title}",
-                message = """
-                            |Dear user,
-                            |
-                            |User with email: ${request.email} has voted for ${request.vote.name} for time slot ${request.slot.start.toReserveFormat()}-${request.slot.end.toReserveFormat()}
-                            |To view more info about the meeting, click on link bellow:
-                            |$dashboardUrl/meeting/${meeting.id}
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
+                message = message,
                 to = meeting.owner,
                 type = NotificationType.MEETING_VOTE
         )
