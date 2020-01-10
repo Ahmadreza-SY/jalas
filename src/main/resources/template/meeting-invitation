@@ -1,0 +1,8 @@
+Dear Guest,
+
+You have invited to '{{meetingTitle}}' meeting created by {{ownerFullName}}.
+Please visit the following link to vote your available time:
+{{landingUrl}}
+
+Best Regards,
+Jalas Team

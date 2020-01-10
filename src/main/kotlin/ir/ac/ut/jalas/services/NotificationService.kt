@@ -55,35 +55,29 @@ class NotificationService(
     }
 
     fun notifyGuest(meeting: Meeting, owner: User, guest: String) {
+        val renderMap = mapOf(
+                "meetingTitle" to meeting.title,
+                "ownerFullName" to owner.fullName(),
+                "landingUrl" to "$dashboardUrl/meeting/${meeting.id}/vote/$guest"
+        )
+        val message = TemplateEngine.render("meeting-invitation", renderMap)
         mailService.sendMail(
                 subject = "Meeting ${meeting.title} Invitation",
-                message = """
-                            |Dear Guest,
-                            |
-                            |You have invited to '${meeting.title}' meeting created by ${owner.fullName()}.
-                            |Please visit the following link to vote your available time:
-                            |$dashboardUrl/meeting/${meeting.id}/vote/$guest
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
+                message = message,
                 to = guest,
                 type = NotificationType.MEETING_INVITATION
         )
     }
 
     fun notifyGuestRemoval(meeting: Meeting, owner: User, guest: String) {
+        val renderMap = mapOf(
+                "meetingTitle" to meeting.title,
+                "ownerFullName" to owner.fullName()
+        )
+        val message = TemplateEngine.render("guest-removal", renderMap)
         mailService.sendMail(
                 subject = "Meeting ${meeting.title} Removal",
-                message = """
-                            |Dear Guest,
-                            |
-                            |You have removed from '${meeting.title}' meeting created by ${owner.fullName()}.
-                            |We hope seeing you in other meetings
-                            |
-                            |Best Regards,
-                            |Jalas Team
-                        """.trimMargin(),
+                message = message,
                 to = guest,
                 type = NotificationType.MEETING_REMOVE_GUEST
         )
