@@ -1,0 +1,8 @@
+Dear user,
+
+User with email: {{voterEmail}} has voted for {{voteName}} for time slot {{slotStart}}-{{slotEnd}}
+To view more info about the meeting, click on link bellow:
+{{landingUrl}}
+
+Best Regards,
+Jalas Team

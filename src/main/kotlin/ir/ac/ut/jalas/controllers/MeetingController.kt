@@ -8,6 +8,7 @@ import ir.ac.ut.jalas.controllers.models.comment.CommentDto
 import ir.ac.ut.jalas.controllers.models.meetings.*
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.BadRequestError
+import ir.ac.ut.jalas.services.CommentService
 import ir.ac.ut.jalas.services.MeetingService
 import ir.ac.ut.jalas.utils.ErrorType
 import org.springframework.web.bind.annotation.*
@@ -17,7 +18,10 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping("/meeting")
-class MeetingController(val meetingService: MeetingService) {
+class MeetingController(
+        val meetingService: MeetingService,
+        val commentService: CommentService
+) {
 
     @GetMapping
     fun getMeetings() = meetingService.getMeetings()
@@ -110,10 +114,10 @@ class MeetingController(val meetingService: MeetingService) {
     fun updateComment(
             @PathVariable meetingId: String,
             @Valid @RequestBody commentDto: CommentDto
-    ) = meetingService.updateComment(meetingId, commentDto)
+    ) = commentService.updateComment(meetingId, commentDto)
 
     @DeleteMapping("/comment/{commentId}")
     fun updateComment(
             @PathVariable commentId: String
-    ) = meetingService.deleteComment(commentId)
+    ) = commentService.deleteComment(commentId)
 }
