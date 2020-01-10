@@ -49,16 +49,18 @@ class MeetingService(
         return MeetingResponse(entity)
     }
 
-    fun updateMeeting(meetingId: String, updateRequest: MeetingUpdateRequest): MeetingResponse {
+    fun updateMeetingSlots(meetingId: String, slotsUpdateRequest: MeetingSlotsUpdateRequest): MeetingResponse {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
 
-        val newSlots = updateRequest.newSlots
+        val newSlots = slotsUpdateRequest.newSlots
         val oldSlots = meeting.slots.map { it.time }
         if (newSlots.any { newSlot -> oldSlots.any { oldSlot -> oldSlot == newSlot } })
             throw BadRequestError(ErrorType.SLOT_ALREADY_EXISTS)
 
-        meeting.slots += updateRequest.newSlots.map { TimeSlot(mutableListOf(), mutableListOf(), mutableListOf(), it) }
+        meeting.slots += slotsUpdateRequest
+                .newSlots
+                .map { TimeSlot(mutableListOf(), mutableListOf(), mutableListOf(), it) }
         meetingRepository.save(meeting)
 
         val comments = commentService.getComments(meetingId)
