@@ -36,7 +36,8 @@ class MockedBeans {
                 email = "mohammad.76kiani@gmail.com",
                 firstName = "Mohammad Reza",
                 lastName = "Kiani",
-                password = "password hash"
+                password = "password hash",
+                notificationTypes = emptyList()
         ))
         return mock
     }

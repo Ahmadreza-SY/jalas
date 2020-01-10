@@ -1,9 +1,9 @@
 package ir.ac.ut.jalas.meeting
 
-import ir.ac.ut.jalas.controllers.models.MeetingCreationRequest
-import ir.ac.ut.jalas.controllers.models.MeetingResponse
-import ir.ac.ut.jalas.controllers.models.VoteOption
-import ir.ac.ut.jalas.controllers.models.VoteRequest
+import ir.ac.ut.jalas.controllers.models.meetings.MeetingCreationRequest
+import ir.ac.ut.jalas.controllers.models.meetings.MeetingResponse
+import ir.ac.ut.jalas.controllers.models.meetings.VoteOption
+import ir.ac.ut.jalas.controllers.models.meetings.VoteRequest
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.exceptions.EntityNotFoundError
 import ir.ac.ut.jalas.services.MeetingService
