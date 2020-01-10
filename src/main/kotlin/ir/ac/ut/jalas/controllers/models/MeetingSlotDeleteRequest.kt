@@ -4,8 +4,7 @@ import ir.ac.ut.jalas.entities.nested.TimeRange
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
-data class MeetingUpdateRequest(
+data class MeetingSlotDeleteRequest(
         @field:NotNull
-        @field:NotEmpty
-        val newSlots: List<TimeRange>
+        val slot: TimeRange
 )

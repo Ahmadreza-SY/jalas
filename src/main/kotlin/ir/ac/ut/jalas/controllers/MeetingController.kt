@@ -31,11 +31,17 @@ class MeetingController(val meetingService: MeetingService) {
     @GetMapping("/{meetingId}")
     fun getMeeting(@PathVariable meetingId: String) = meetingService.getMeeting(meetingId)
 
-    @PutMapping("/{meetingId}")
+    @PutMapping("/{meetingId}/slot")
     fun updateMeetingSlots(
             @PathVariable meetingId: String,
-            @Valid @RequestBody updateRequest: MeetingUpdateRequest
-    ) = meetingService.updateMeeting(meetingId, updateRequest)
+            @Valid @RequestBody slotsUpdateRequest: MeetingSlotsUpdateRequest
+    ) = meetingService.updateMeetingSlots(meetingId, slotsUpdateRequest)
+
+    @DeleteMapping("/{meetingId}/slot")
+    fun deleteMeetingSlot(
+            @PathVariable meetingId: String,
+            @Valid @RequestBody deleteRequest: MeetingSlotDeleteRequest
+    ) = meetingService.deleteMeetingSlot(meetingId, deleteRequest)
 
     @PostMapping("/{meetingId}/guest")
     fun addMeetingGuest(
