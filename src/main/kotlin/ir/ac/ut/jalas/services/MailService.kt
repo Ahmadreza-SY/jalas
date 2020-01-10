@@ -1,5 +1,7 @@
 package ir.ac.ut.jalas.services
 
+import ir.ac.ut.jalas.entities.nested.NotificationType
+import ir.ac.ut.jalas.repositories.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service
 @Service
 class MailService(
         private val javaMailSender: JavaMailSender,
+        private val userRepository: UserRepository,
         @Value("\${jalas.notificationEnabled}")
         val notificationEnabled: Boolean
 ) {
@@ -18,8 +21,8 @@ class MailService(
 
 
     @Async
-    fun sendMail(subject: String, message: String, to: String) {
-        if (!notificationEnabled)
+    fun sendMail(subject: String, message: String, to: String, type: NotificationType) {
+        if (!notificationEnabled || !hasPermission(email = to, type = type))
             return
         val mailMessage = SimpleMailMessage()
         mailMessage.setTo(to)
@@ -29,5 +32,10 @@ class MailService(
         javaMailSender.send(mailMessage)
 
         logger.info("email '$subject' successfully sent to '$to'")
+    }
+
+    fun hasPermission(email: String, type: NotificationType): Boolean {
+        val user = userRepository.findByEmail(email) ?: return true
+        return type in user.notificationTypes
     }
 }

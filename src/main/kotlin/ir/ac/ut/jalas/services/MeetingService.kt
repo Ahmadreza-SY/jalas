@@ -10,6 +10,7 @@ import ir.ac.ut.jalas.controllers.models.meetings.*
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.MeetingStatus
+import ir.ac.ut.jalas.entities.nested.NotificationType
 import ir.ac.ut.jalas.entities.nested.TimeRange
 import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.exceptions.*
@@ -118,7 +119,8 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                to = guest
+                to = guest,
+                type = NotificationType.MEETING_INVITATION
         )
     }
 
@@ -134,7 +136,8 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                to = guest
+                to = guest,
+                type = NotificationType.MEETING_REMOVE_GUEST
         )
     }
 
@@ -227,7 +230,8 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                    to = participant
+                    to = participant,
+                    type = NotificationType.MEETING_RESERVATION
             )
         }
     }
@@ -300,7 +304,8 @@ class MeetingService(
                             |Best Regards,
                             |Jalas Team
                         """.trimMargin(),
-                to = meeting.owner
+                to = meeting.owner,
+                type = NotificationType.MEETING_VOTE
         )
     }
 
