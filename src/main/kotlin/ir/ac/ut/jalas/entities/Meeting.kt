@@ -45,10 +45,11 @@ data class Meeting(
 
     }
 
-    fun deleteSlot(deleteRequest: MeetingSlotDeleteRequest) {
+    fun deleteSlot(deleteRequest: MeetingSlotDeleteRequest): TimeSlot {
         val foundSlot = slots.find { it.time == deleteRequest.slot }
                 ?: throw BadRequestError(ErrorType.SLOT_NOT_FOUND)
         slots.removeIf { it.time == foundSlot.time }
+        return foundSlot
     }
 
     fun addGuest(request: MeetingUpdateGuestRequest) {

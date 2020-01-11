@@ -65,7 +65,8 @@ class MeetingService(
     fun deleteMeetingSlot(meetingId: String, deleteRequest: MeetingSlotDeleteRequest): MeetingResponse {
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
-        meeting.deleteSlot(deleteRequest)
+        val deletedSlot = meeting.deleteSlot(deleteRequest)
+        notificationService.notifyPollOptionDeletion(deletedSlot, meeting)
         meetingRepository.save(meeting)
         val comments = commentService.getComments(meetingId)
         return MeetingResponse(meeting, comments)

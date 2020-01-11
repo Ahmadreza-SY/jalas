@@ -4,6 +4,7 @@ import ir.ac.ut.jalas.controllers.models.meetings.VoteRequest
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.NotificationType
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.utils.TemplateEngine
 import ir.ac.ut.jalas.utils.toReserveFormat
 import org.springframework.beans.factory.annotation.Value
@@ -14,6 +15,24 @@ class NotificationService(
         val mailService: MailService,
         @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
+
+    fun notifyPollOptionDeletion(deletedSlot: TimeSlot, meeting: Meeting) {
+        val renderMap = mutableMapOf(
+                "meetingTitle" to meeting.title,
+                "landingUrl" to "$dashboardUrl/meeting/${meeting.id}"
+        )
+        deletedSlot.getAllVoters().forEach { voter ->
+            renderMap["startTime"] = deletedSlot.time.start.toString()
+            renderMap["endTime"] = deletedSlot.time.end.toString()
+            val message = TemplateEngine.render("success-reservation", renderMap)
+            mailService.sendMail(
+                    subject = "Meeting Time Option Removal",
+                    message = message,
+                    to = voter,
+                    type = NotificationType.MEETING_TIME_OPTION_CHANGE
+            )
+        }
+    }
 
     fun notifySuccessReservation(user: User, meeting: Meeting) {
         (meeting.guests + meeting.owner).forEach { participant ->

@@ -1,0 +1,8 @@
+Dear Participant,
+
+One of the time options of your meetings that you have voted for, named '{{meetingTitle}}' at time [{{startTime}}, {{endTime}}] has been removed.
+You can check the meeting from the link below:
+{{landingUrl}}
+
+Best Regards,
+Jalas Team
