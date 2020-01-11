@@ -1,0 +1,8 @@
+Dear Participant,
+
+An alternative time option has been added to the meeting '{{meetingTitle}}' with the time [{{startTime}}, {{endTime}}].
+You can check the meeting and vote from the link below:
+{{landingUrl}}
+
+Best Regards,
+Jalas Team

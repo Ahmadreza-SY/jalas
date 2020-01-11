@@ -32,6 +32,8 @@ data class TimeSlot(
         }
     }
 
+    fun getAllVoters(): List<String> = agreeIfNeededUsers + disagreeingUsers + agreeingUsers
+
     private fun revokeVote(email: String) {
         when {
             agreeingUsers.contains(email) -> agreeingUsers -= email

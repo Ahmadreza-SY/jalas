@@ -34,6 +34,8 @@ data class Meeting(
     fun isParticipant(userEmail: String): Boolean =
             guests.contains(userEmail.toLowerCase()) || owner == userEmail.toLowerCase()
 
+    fun getAllParticipants(): List<String> = guests + owner
+
     fun updateSlots(updateRequest: MeetingSlotsUpdateRequest) {
         val newSlots = updateRequest.newSlots
         val oldSlots = slots.map { it.time }
@@ -45,10 +47,11 @@ data class Meeting(
 
     }
 
-    fun deleteSlot(deleteRequest: MeetingSlotDeleteRequest) {
+    fun deleteSlot(deleteRequest: MeetingSlotDeleteRequest): TimeSlot {
         val foundSlot = slots.find { it.time == deleteRequest.slot }
                 ?: throw BadRequestError(ErrorType.SLOT_NOT_FOUND)
         slots.removeIf { it.time == foundSlot.time }
+        return foundSlot
     }
 
     fun addGuest(request: MeetingUpdateGuestRequest) {

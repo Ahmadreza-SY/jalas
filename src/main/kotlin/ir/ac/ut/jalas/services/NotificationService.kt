@@ -4,6 +4,8 @@ import ir.ac.ut.jalas.controllers.models.meetings.VoteRequest
 import ir.ac.ut.jalas.entities.Meeting
 import ir.ac.ut.jalas.entities.User
 import ir.ac.ut.jalas.entities.nested.NotificationType
+import ir.ac.ut.jalas.entities.nested.TimeRange
+import ir.ac.ut.jalas.entities.nested.TimeSlot
 import ir.ac.ut.jalas.utils.TemplateEngine
 import ir.ac.ut.jalas.utils.toReserveFormat
 import org.springframework.beans.factory.annotation.Value
@@ -15,8 +17,44 @@ class NotificationService(
         @Value("\${jalas.dashboard.url}") val dashboardUrl: String
 ) {
 
+    fun notifyPollOptionAddition(addedSlot: TimeRange, meeting: Meeting) {
+        val renderMap = mutableMapOf(
+                "meetingTitle" to meeting.title,
+                "landingUrl" to "$dashboardUrl/meeting/${meeting.id}"
+        )
+        meeting.getAllParticipants().forEach { participant ->
+            renderMap["startTime"] = addedSlot.start.toString()
+            renderMap["endTime"] = addedSlot.end.toString()
+            val message = TemplateEngine.render("poll-option-addition", renderMap)
+            mailService.sendMail(
+                    subject = "New Meeting Time Option",
+                    message = message,
+                    to = participant,
+                    type = NotificationType.MEETING_TIME_OPTION_CHANGE
+            )
+        }
+    }
+
+    fun notifyPollOptionDeletion(deletedSlot: TimeSlot, meeting: Meeting) {
+        val renderMap = mutableMapOf(
+                "meetingTitle" to meeting.title,
+                "landingUrl" to "$dashboardUrl/meeting/${meeting.id}"
+        )
+        deletedSlot.getAllVoters().forEach { voter ->
+            renderMap["startTime"] = deletedSlot.time.start.toString()
+            renderMap["endTime"] = deletedSlot.time.end.toString()
+            val message = TemplateEngine.render("poll-option-deletion", renderMap)
+            mailService.sendMail(
+                    subject = "Meeting Time Option Removal",
+                    message = message,
+                    to = voter,
+                    type = NotificationType.MEETING_TIME_OPTION_CHANGE
+            )
+        }
+    }
+
     fun notifySuccessReservation(user: User, meeting: Meeting) {
-        (meeting.guests + meeting.owner).forEach { participant ->
+        meeting.getAllParticipants().forEach { participant ->
             val participantName = if (participant == meeting.owner) user.firstName else "Participant"
             val renderMap = mapOf(
                     "participantName" to participantName,
