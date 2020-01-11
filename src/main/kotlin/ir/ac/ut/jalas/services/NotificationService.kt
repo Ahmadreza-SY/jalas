@@ -24,7 +24,7 @@ class NotificationService(
         deletedSlot.getAllVoters().forEach { voter ->
             renderMap["startTime"] = deletedSlot.time.start.toString()
             renderMap["endTime"] = deletedSlot.time.end.toString()
-            val message = TemplateEngine.render("success-reservation", renderMap)
+            val message = TemplateEngine.render("poll-option-deletion", renderMap)
             mailService.sendMail(
                     subject = "Meeting Time Option Removal",
                     message = message,
