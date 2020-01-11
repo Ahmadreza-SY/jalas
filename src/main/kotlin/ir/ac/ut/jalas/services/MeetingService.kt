@@ -57,6 +57,7 @@ class MeetingService(
         val meeting = meetingRepository.findByIdOrNull(meetingId)
                 ?: throw BadRequestError(ErrorType.MEETING_NOT_FOUND)
         meeting.updateSlots(slotsUpdateRequest)
+        slotsUpdateRequest.newSlots.forEach { notificationService.notifyPollOptionAddition(it, meeting) }
         meetingRepository.save(meeting)
         val comments = commentService.getComments(meetingId)
         return MeetingResponse(meeting, comments)

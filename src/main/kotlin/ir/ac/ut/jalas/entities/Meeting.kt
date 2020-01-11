@@ -34,6 +34,8 @@ data class Meeting(
     fun isParticipant(userEmail: String): Boolean =
             guests.contains(userEmail.toLowerCase()) || owner == userEmail.toLowerCase()
 
+    fun getAllParticipants(): List<String> = guests + owner
+
     fun updateSlots(updateRequest: MeetingSlotsUpdateRequest) {
         val newSlots = updateRequest.newSlots
         val oldSlots = slots.map { it.time }
